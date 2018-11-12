@@ -94,7 +94,10 @@ class Pipeline:
     def optimization(self, iteration):
         """ TODO docstring optimization """
         if iteration == 10 :
-            K.set_value(self.model.optimizer.lr, 0.5 * self.model.optimizer.lr)
+            K.set_value(
+                self.model.neural_network.network.optimizer.lr,
+                config.NEURAL_NETWORKS["learning_rate"]/10
+            )
         self.model.train()
 
     def evaluation(self):
