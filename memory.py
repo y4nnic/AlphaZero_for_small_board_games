@@ -61,7 +61,7 @@ class PositionMemory:
             self.size -= 100
     
     def add_rotations(self, position):
-        self.size += 4
+        self.size += 3
         rotation_1 = np.rot90(position[np.newaxis,:,:], k=1, axis=(1,2))
         prob_1 = np.zeros(8)
         prob_1[0] = position.probabilities[2]
