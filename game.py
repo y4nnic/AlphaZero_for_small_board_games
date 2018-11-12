@@ -184,6 +184,212 @@ class TicTacToeOptimized(Game):
         return board
 
 
+class Connect4Optimized():
+
+    def __init__(self):
+        self.player_1 = 0
+        self.player_2 = 1
+
+        self.board_height = 6
+        self.board_width = 7
+        self.board_size = self.board_height * self.board_width
+
+        board_p1 = 0b000000000000000000000000000000000000000000
+        board_p2 = 0b000000000000000000000000000000000000000000
+
+        self.boards = [board_p2, board_p2]
+        self.legal_moves = np.ones(self.board_width, dtype=np.uint8)
+        self.current_player = self.player_1
+        self.column_counts = np.zeros(self.board_width, dtype=np.uint8)
+        self.turn = 0
+
+        self.boards_simulation = [board_p1, board_p2]
+        self.legal_moves_simulation = np.ones(self.board_size, dtype=np.uint8)
+        self.current_player_simulation = self.current_player
+        self.column_counts_simulation = np.zeros(self.board_width, dtype=np.uint8)
+        self.turn_simulation = self.turn
+
+    def get_len_action_space(self):
+        return self.board_width
+
+    def reset_simulation(self):
+        self.boards_simulation = copy.deepcopy(self.boards)
+        self.legal_moves_simulation = copy.deepcopy(self.legal_moves)
+        self.current_player_simulation = self.current_player
+        self.column_counts_simulation = copy.deepcopy(self.column_counts)
+        self.turn_simulations = self.turn
+
+    def reset_game(self):
+        board_p1 = 0b000000000000000000000000000000000000000000
+        board_p2 = 0b000000000000000000000000000000000000000000
+
+        self.boards = [board_p1, board_p2]
+        self.legal_moves = np.ones(self.board_size, dtype=np.uint8)
+        self.current_player = self.player_1
+        self.column_counts = np.zeros(self.board_width, dtype=np.uint8)
+        self.turn = 0
+
+    def execute_move(self, action):
+        if self.legal_moves[action] == 1:
+            move = 1 << (6 - action + 7 * self.column_counts[action])
+            self.boards[self.current_player] |= move
+
+            self.column_counts[action] += 1
+
+            if self.column_counts[action] == 6:
+                self.legal_moves[action] = 0
+        else:
+            print("Illegal Move!")
+
+        winning = self.is_winning()
+        self.current_player = 1 - self.current_player
+        self.turn += 1
+        return winning
+
+    def is_winning(self):
+        # vertical check
+        board = self.boards[self.current_player]
+        board = board & (board >> 7)
+        if board & (board >> 14):
+            return 1
+
+        # horizontal check
+        board = self.boards[self.current_player]
+        board = board & (board >> 1)
+        if board & (board >> 2):
+            return 1
+
+        # diagonal \
+        board = self.boards[self.current_player]
+        board = board & (board >> 8)
+        if board & (board >> 16):
+            return 1
+
+        # diagonal /
+        board = self.boards[self.current_player]
+        board = board & (board >> 6)
+        if board & (board >> 12):
+            return 1
+        return 0
+
+    def get_current_position(self):
+        pieces_p1 = self.board_to_array(self.boards[self.player_1])
+        pieces_p2 = self.board_to_array(self.boards[self.player_2])
+
+        if self.current_player == self.player_1:
+            colour = np.ones((self.board_height, self.board_width, 1), dtype=np.uint8)
+            state = np.concatenate((pieces_p1, pieces_p2, colour), axis=2)
+
+        if self.current_player == self.player_2:
+            colour = np.zeros((self.board_height, self.board_width, 1), dtype=np.uint8)
+            state = np.concatenate((pieces_p2, pieces_p1, colour), axis=2)
+
+        return memory.Position(state, self.legal_moves)
+
+    def simulate_move(self, action):
+        if self.legal_moves_simulation[action] == 1:
+            move = 1 << (6 - action + 7 * self.column_counts_simulation[action])
+            self.boards_simulation[self.current_player_simulation] |= move
+
+            self.column_counts_simulation[action] += 1
+
+            if self.column_counts_simulation[action] == 6:
+                self.legal_moves_simulation[action] = 0
+        else:
+            print("Illegal Move (Simulation)!")
+
+        winning = self.is_winning_simulation()
+        self.turn_simulation += 1
+        return winning
+
+    def is_winning_simulation(self):
+        # vertical check
+        board = self.boards_simulation[self.current_player_simulation]
+        board = board & (board >> 7)
+        if board & (board >> 14):
+            return 1
+
+        # horizontal check
+        board = self.boards_simulation[self.current_player_simulation]
+        board = board & (board >> 1)
+        if board & (board >> 2):
+            return 1
+
+        # diagonal \
+        board = self.boards_simulation[self.current_player_simulation]
+        board = board & (board >> 8)
+        if board & (board >> 16):
+            return 1
+
+        # diagonal /
+        board = self.boards_simulation[self.current_player_simulation]
+        board = board & (board >> 6)
+        if board & (board >> 12):
+            return 1
+        return 0
+
+    def get_current_position_simulation(self):
+        pieces_p1 = self.board_to_array(self.boards_simulation[self.player_1])
+        pieces_p2 = self.board_to_array(self.boards_simulation[self.player_2])
+
+        if self.current_player_simulation == self.player_1:
+            colour = np.ones((self.board_height, self.board_width, 1), dtype=np.uint8)
+            state = np.concatenate((pieces_p1, pieces_p2, colour), axis=2)
+
+        if self.current_player_simulation == self.player_2:
+            colour = np.zeros((self.board_height, self.board_width, 1), dtype=np.uint8)
+            state = np.concatenate((pieces_p2, pieces_p1, colour), axis=2)
+
+        return memory.Position(state, self.legal_moves_simulation)
+
+    def board_to_array(self, board_bin):
+        board = np.zeros((6, 7, 1), dtype=np.uint8)
+        print("board_bin {}".format(bin(board_bin)))
+        board[0, 0] = board_bin >> 41
+        board[0, 1] = (board_bin & 0b10000000000000000000000000000000000000000) >> 40
+        board[0, 2] = (board_bin & 0b1000000000000000000000000000000000000000) >> 39
+        board[0, 3] = (board_bin & 0b100000000000000000000000000000000000000) >> 38
+        board[0, 4] = (board_bin & 0b10000000000000000000000000000000000000) >> 37
+        board[0, 5] = (board_bin & 0b1000000000000000000000000000000000000) >> 36
+        board[0, 6] = (board_bin & 0b100000000000000000000000000000000000) >> 35
+        board[1, 0] = (board_bin & 0b10000000000000000000000000000000000) >> 34
+        board[1, 1] = (board_bin & 0b1000000000000000000000000000000000) >> 33
+        board[1, 2] = (board_bin & 0b100000000000000000000000000000000) >> 32
+        board[1, 3] = (board_bin & 0b10000000000000000000000000000000) >> 31
+        board[1, 4] = (board_bin & 0b1000000000000000000000000000000) >> 30
+        board[1, 5] = (board_bin & 0b100000000000000000000000000000) >> 29
+        board[1, 6] = (board_bin & 0b10000000000000000000000000000) >> 28
+        board[2, 0] = (board_bin & 0b1000000000000000000000000000) >> 27
+        board[2, 1] = (board_bin & 0b100000000000000000000000000) >> 26
+        board[2, 2] = (board_bin & 0b10000000000000000000000000) >> 25
+        board[2, 3] = (board_bin & 0b1000000000000000000000000) >> 24
+        board[2, 4] = (board_bin & 0b100000000000000000000000) >> 23
+        board[2, 5] = (board_bin & 0b10000000000000000000000) >> 22
+        board[2, 6] = (board_bin & 0b1000000000000000000000) >> 21
+        board[3, 0] = (board_bin & 0b100000000000000000000) >> 20
+        board[3, 1] = (board_bin & 0b10000000000000000000) >> 19
+        board[3, 2] = (board_bin & 0b1000000000000000000) >> 18
+        board[3, 3] = (board_bin & 0b100000000000000000) >> 17
+        board[3, 4] = (board_bin & 0b10000000000000000) >> 16
+        board[3, 5] = (board_bin & 0b1000000000000000) >> 15
+        board[3, 6] = (board_bin & 0b100000000000000) >> 14
+        board[4, 0] = (board_bin & 0b10000000000000) >> 13
+        board[4, 1] = (board_bin & 0b1000000000000) >> 12
+        board[4, 2] = (board_bin & 0b100000000000) >> 11
+        board[4, 3] = (board_bin & 0b10000000000) >> 10
+        board[4, 4] = (board_bin & 0b1000000000) >> 9
+        board[4, 5] = (board_bin & 0b100000000) >> 8
+        board[4, 6] = (board_bin & 0b10000000) >> 7
+        board[5, 0] = (board_bin & 0b1000000) >> 6
+        board[5, 1] = (board_bin & 0b100000) >> 5
+        board[5, 2] = (board_bin & 0b10000) >> 4
+        board[5, 3] = (board_bin & 0b1000) >> 3
+        board[5, 4] = (board_bin & 0b100) >> 2
+        board[5, 5] = (board_bin & 0b10) >> 1
+        board[5, 6] = board_bin & 0b1
+        return board
+
+
 class TicTacToe(Game):
     """ TODO docstring TicTacToe """
 
