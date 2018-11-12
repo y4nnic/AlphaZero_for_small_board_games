@@ -52,7 +52,7 @@ class PositionMemory:
             self.outcomes = np.append(self.outcomes, position.outcome)
             self.probabilities = np.append(self.probabilities, position.probabilities[np.newaxis, :], axis=0)
         
-        #self.add_rotations(position)
+        self.add_rotations(position)
         
         if self.size > 10000:
             self.states = self.states[100:]
@@ -61,6 +61,7 @@ class PositionMemory:
             self.size -= 100
     
     def add_rotations(self, position):
+        self.size += 4
         rotation_1 = np.rot90(position[np.newaxis,:,:], k=1, axis=(1,2))
         prob_1 = np.zeros(8)
         prob_1[0] = position.probabilities[2]
