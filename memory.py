@@ -62,8 +62,8 @@ class PositionMemory:
     
     def add_rotations(self, position):
         self.size += 3
-        rotation_1 = np.rot90(position[np.newaxis,:,:], k=1, axis=(1,2))
-        prob_1 = np.zeros(8)
+        rotation_1 = np.rot90(position.state[np.newaxis,:,:], 1, (1,2))
+        prob_1 = np.zeros(9)
         prob_1[0] = position.probabilities[2]
         prob_1[1] = position.probabilities[5]
         prob_1[2] = position.probabilities[8]
@@ -78,8 +78,8 @@ class PositionMemory:
         self.outcomes = np.append(self.outcomes, position.outcome)
         self.probabilities = np.append(self.probabilities, prob_1[np.newaxis,:], axis=0)
         
-        rotation_2 = np.rot90(position[np.newaxis,:,:], k=2, axis=(1,2))
-        prob_2 = np.zeros(8)
+        rotation_2 = np.rot90(position.state[np.newaxis,:,:], 2, (1,2))
+        prob_2 = np.zeros(9)
         prob_2[0] = position.probabilities[8]
         prob_2[1] = position.probabilities[7]
         prob_2[2] = position.probabilities[6]
@@ -94,8 +94,8 @@ class PositionMemory:
         self.outcomes = np.append(self.outcomes, position.outcome)
         self.probabilities = np.append(self.probabilities, prob_2[np.newaxis,:], axis=0)
         
-        rotation_3 = np.rot90(position[np.newaxis,:,:], k=3, axis=(1,2))
-        prob_3 = np.zeros(8)
+        rotation_3 = np.rot90(position.state[np.newaxis,:,:], 3, (1,2))
+        prob_3 = np.zeros(9)
         prob_3[0] = position.probabilities[6]
         prob_3[1] = position.probabilities[3]
         prob_3[2] = position.probabilities[0]
