@@ -406,11 +406,11 @@ class MonteCarloTreeSearch:
 
         self.update_root(selected_action)
 
-        self.logger.info("MCTS: distribution: ")
-        self.logger.info("MCTS: {} | {} | {} " .format(distribution[0], distribution[1], distribution[2]))
-        self.logger.info("MCTS: {} | {} | {} " .format(distribution[3], distribution[4], distribution[5]))
-        self.logger.info("MCTS: {} | {} | {} " .format(distribution[6], distribution[7], distribution[8]))
-        self.logger.info("MCTS: selected action: {}" .format(selected_action))
+        #self.logger.info("MCTS: distribution: ")
+        #self.logger.info("MCTS: {} | {} | {} " .format(distribution[0], distribution[1], distribution[2]))
+        #self.logger.info("MCTS: {} | {} | {} " .format(distribution[3], distribution[4], distribution[5]))
+        #self.logger.info("MCTS: {} | {} | {} " .format(distribution[6], distribution[7], distribution[8]))
+        #self.logger.info("MCTS: selected action: {}" .format(selected_action))
         return selected_action, distribution
 
     def update_root(self, selected_action):
