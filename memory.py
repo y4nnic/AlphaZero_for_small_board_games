@@ -29,12 +29,13 @@ class Position:
 class PositionMemory:
     """ TODO docstring Memory """
 
-    def __init__(self):
+    def __init__(self, variant):
         """ TODO docstring __init__ """
         self.states = None  # []
         self.outcomes = None  # []
         self.probabilities = None  # []
         self.size = 0
+        self.variant = variant
         #self.logger = logs.get_logger()
 
     def add(self, position):
@@ -51,8 +52,9 @@ class PositionMemory:
             self.states= np.append(self.states, position.state[np.newaxis, :, :, :], axis=0)
             self.outcomes = np.append(self.outcomes, position.outcome)
             self.probabilities = np.append(self.probabilities, position.probabilities[np.newaxis, :], axis=0)
-        
-        self.add_rotations(position)
+
+        if self.variant == "TicTacToe":
+            self.add_rotations(position)
         
         if self.size > 10000:
             self.states = self.states[100:]
@@ -178,30 +180,32 @@ class PositionMemory:
     def print(self):
         """ Prints all positions in this memory. """
         np.set_printoptions(precision=3)
-        for i in range(self.size):
-            print("---------------------------------")
-            print("Position {}" .format(i))
-            player = self.states[i,0,0,2]
-            if player == 0: player = 2
-            print("Current player: {}" .format(player))
-            if player == 2:
-                board = self.states[i, :, :, 1] + self.states[i, :,:, 0] * 2
-            if player == 1:
-                board = self.states[i, :, :, 0] + self.states[i, :, :, 1] * 2
-            print("{}" .format(board))
-            print("Probabilities: \n {} | {} | {} " .format(
-                self.probabilities[i, 0],
-                self.probabilities[i, 1],
-                self.probabilities[i, 2]
-            ))
-            print("{} | {} | {}" .format(
-                self.probabilities[i, 3],
-                self.probabilities[i, 4],
-                self.probabilities[i, 5]
-            ))
-            print("{} | {} | {}" .format(
-                self.probabilities[i, 6],
-                self.probabilities[i, 7],
-                self.probabilities[i, 8]
-            ))
-            print("Outcome: {}" .format(self.outcomes[i]))
+
+        if self.game == "TicTacToe":
+            for i in range(self.size):
+                print("---------------------------------")
+                print("Position {}" .format(i))
+                player = self.states[i,0,0,2]
+                if player == 0: player = 2
+                print("Current player: {}" .format(player))
+                if player == 2:
+                    board = self.states[i, :, :, 1] + self.states[i, :,:, 0] * 2
+                if player == 1:
+                    board = self.states[i, :, :, 0] + self.states[i, :, :, 1] * 2
+                print("{}" .format(board))
+                print("Probabilities: \n {} | {} | {} " .format(
+                    self.probabilities[i, 0],
+                    self.probabilities[i, 1],
+                    self.probabilities[i, 2]
+                ))
+                print("{} | {} | {}" .format(
+                    self.probabilities[i, 3],
+                    self.probabilities[i, 4],
+                    self.probabilities[i, 5]
+                ))
+                print("{} | {} | {}" .format(
+                    self.probabilities[i, 6],
+                    self.probabilities[i, 7],
+                    self.probabilities[i, 8]
+                ))
+                print("Outcome: {}" .format(self.outcomes[i]))

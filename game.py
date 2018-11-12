@@ -51,6 +51,7 @@ class TicTacToeOptimized(Game):
             Player 1 -> 0
             Player 2 -> 1
         """
+        self.name = "TicTacToe"
         self.moves = {
             0:0x40040040,
             1:0x20004000,
@@ -171,7 +172,6 @@ class TicTacToeOptimized(Game):
 
     def board_to_array(self, board_bin):
         board = np.zeros((3,3,1), dtype=np.uint8)
-
         board[0,0] = (board_bin & 0x40) >> 6
         board[0,1] = (board_bin & 0x4000) >> 14
         board[0,2] = (board_bin & 0x4) >> 2
@@ -184,9 +184,10 @@ class TicTacToeOptimized(Game):
         return board
 
 
-class Connect4Optimized():
+class Connect4Optimized(Game):
 
     def __init__(self):
+        self.name = "Connect4"
         self.player_1 = 0
         self.player_2 = 1
 
@@ -204,7 +205,7 @@ class Connect4Optimized():
         self.turn = 0
 
         self.boards_simulation = [board_p1, board_p2]
-        self.legal_moves_simulation = np.ones(self.board_size, dtype=np.uint8)
+        self.legal_moves_simulation = np.ones(self.board_width, dtype=np.uint8)
         self.current_player_simulation = self.current_player
         self.column_counts_simulation = np.zeros(self.board_width, dtype=np.uint8)
         self.turn_simulation = self.turn
@@ -224,7 +225,7 @@ class Connect4Optimized():
         board_p2 = 0b000000000000000000000000000000000000000000
 
         self.boards = [board_p1, board_p2]
-        self.legal_moves = np.ones(self.board_size, dtype=np.uint8)
+        self.legal_moves = np.ones(self.board_width, dtype=np.uint8)
         self.current_player = self.player_1
         self.column_counts = np.zeros(self.board_width, dtype=np.uint8)
         self.turn = 0
@@ -244,6 +245,7 @@ class Connect4Optimized():
         winning = self.is_winning()
         self.current_player = 1 - self.current_player
         self.turn += 1
+        print("turn {}" .format(self.turn))
         return winning
 
     def is_winning(self):
@@ -300,7 +302,7 @@ class Connect4Optimized():
 
         winning = self.is_winning_simulation()
         self.turn_simulation += 1
-        return winning
+        return winning, self.turn_simulation
 
     def is_winning_simulation(self):
         # vertical check
@@ -344,7 +346,6 @@ class Connect4Optimized():
 
     def board_to_array(self, board_bin):
         board = np.zeros((6, 7, 1), dtype=np.uint8)
-        print("board_bin {}".format(bin(board_bin)))
         board[0, 0] = board_bin >> 41
         board[0, 1] = (board_bin & 0b10000000000000000000000000000000000000000) >> 40
         board[0, 2] = (board_bin & 0b1000000000000000000000000000000000000000) >> 39

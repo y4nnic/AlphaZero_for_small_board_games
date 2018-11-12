@@ -15,19 +15,22 @@ import copy
 class Pipeline:
     """ TODO docstring Pipeline """
 
-    def __init__(self, id):
+    def __init__(self, id, variant="TicTacToe"):
         """ TODO docstring __init__ """
         # game environment
-        # input_shape = (6, 7, 3)
-        # num_possible_moves = 7
-        # self.game = game.Connect4(6,7)
+        if variant == "Connect4":
+            self.input_shape = (6, 7, 3)
+            self.num_possible_moves = 7
+            self.game = game.Connect4Optimized()
+        if variant == "TicTacToe":
+            self.input_shape = (3, 3, 3)
+            self.num_possible_moves = 9
+            self.game = game.TicTacToeOptimized()
 
-        self.input_shape = (3, 3, 3)
-        self.num_possible_moves = 9
-        self.game = game.TicTacToeOptimized()
+        self.variant = variant
 
         # memory
-        self.memory = memory.PositionMemory()
+        self.memory = memory.PositionMemory(variant=variant)
 
         # model
         self.id = id
@@ -39,7 +42,7 @@ class Pipeline:
         )
 
         # agent
-        self.agent = agent.AlphaZeroAgent(model=self.model)
+        self.agent = agent.AlphaZeroAgent(model=self.model, variant=variant)
 
         # evaluation
         self.best_model_version = 0
@@ -78,6 +81,7 @@ class Pipeline:
         """ TODO docstring self_play """
         num_games = config.SELF_PLAY['num_games']
         for i in range(num_games):
+            print("game {}" .format(i))
             #self.logger.info("Pipeline: Self-Play - Game {}".format(i))
             #print("Game {}".format(i))
             self.agent.self_play(self.memory, self.game)
@@ -93,7 +97,7 @@ class Pipeline:
 
     def optimization(self, iteration):
         """ TODO docstring optimization """
-        if iteration == 10 :
+        if iteration == 10:
             K.set_value(
                 self.model.neural_network.network.optimizer.lr,
                 config.NEURAL_NETWORKS["learning_rate"]/10
@@ -120,7 +124,7 @@ class Pipeline:
         for i in range(num_games):
             #self.logger.info("Pipeline: Evaluation - Game {}".format(i))
             #print("game {}".format(i))
-            winner = agent_vs_random(self.agent, player)
+            winner = agent_vs_random(self.agent, player, self.variant)
             
             if winner == 0:
                 draws += 1
@@ -192,10 +196,14 @@ class Pipeline:
                 #self.agent=best_agent
 
 
-def agent_vs_random(eval_agent, player):
+def agent_vs_random(eval_agent, player, variant="TicTacToe"):
     # logger = logs.get_logger()
-    # game_environment = game.Connect4(6, 7)
-    game_environment = game.TicTacToe()
+    if variant == "TicTacToe":
+        game_environment = game.TicTacToeOptimized()
+        max_length = 9
+    if variant == "Connect4":
+        game_environment = game.Connect4Optimized()
+        max_length = 42
 
     player_one = eval_agent
     player_two = agent.RandomAgent(eval_agent)
@@ -217,7 +225,7 @@ def agent_vs_random(eval_agent, player):
 
     num_simulations = config.EVALUATION['num_simulations']
 
-    while winner is 0 and turn < 9:
+    while winner is 0 and turn < max_length:
         if current_player == 1:
             winner, _ = player_one.play_move(num_simulations, temperature=0)
         if current_player == -1:
@@ -232,10 +240,15 @@ def agent_vs_random(eval_agent, player):
     return winner
 
 
-def agent_vs_agent(eval_agent, best_agent, player):
+def agent_vs_agent(eval_agent, best_agent, player, variant="TicTacToe"):
     # logger = logs.get_logger()
     # game_environment = game.Connect4(6, 7)
-    game_environment = game.TicTacToe()
+    if variant == "TicTacToe":
+        game_environment = game.TicTacToeOptimized()
+        max_length = 9
+    if variant == "Connect4":
+        game_environment = game.Connect4Optimized()
+        max_length = 42
 
     player_one = eval_agent
     player_two = best_agent
@@ -257,7 +270,7 @@ def agent_vs_agent(eval_agent, best_agent, player):
 
     num_simulations = config.EVALUATION['num_simulations']
 
-    while winner is 0 and turn < 9:
+    while winner is 0 and turn < max_length:
         if current_player == 1:
             winner, _ = player_one.play_move(num_simulations, temperature=0, opponent=player_two)
         if current_player == -1:

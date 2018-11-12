@@ -75,12 +75,17 @@ class AlphaZeroAgent(Agent):
         len_action_space: The length of the game's action space.
         tree_search: A MonteCarloTreeSearch object that handles the MCTS.
     """
-    def __init__(self, model):
+    def __init__(self, model, variant):
         """ Model is set. The other attributes are only set when a game is joined. """
         self.model = model
         self.game = None
         self.len_action_space = None
         self.tree_search = None
+
+        if variant == "TicTacToe":
+            self.max_game_length = 9
+        if variant == "Connect4":
+            self.max_game_length = 42
 
         # initialize logger
         # self.logger = logs.get_logger()
@@ -150,7 +155,7 @@ class AlphaZeroAgent(Agent):
         turn = 0
         positions = []
 
-        while winning is 0 and turn < 9:
+        while winning is 0 and turn < self.max_game_length:
             winning, position = self.play_move(number_simulations=config.SELF_PLAY["num_simulations"], add_dirichlet=True)
             positions.append(position)
             turn += 1
