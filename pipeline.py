@@ -2,6 +2,7 @@ import agent
 import game
 import memory
 import model
+import keras.backend as K
 
 import logs
 import config
@@ -65,7 +66,7 @@ class Pipeline:
 
             #self.logger.info("Pipeline: ######## Iteration {} | Optimization ########".format(iteration))
             print("iteration {} | optimization".format(iteration))
-            self.optimization()
+            self.optimization(iteration)
 
             #self.logger.info("Pipeline: ######## Iteration {} | Evaluation ########".format(iteration))
             print("iteration {} | evaluation".format(iteration))
@@ -90,8 +91,10 @@ class Pipeline:
         print("saving memory {}".format(memory_id))
         self.memory.save(memory_id)
 
-    def optimization(self):
+    def optimization(self, iteration):
         """ TODO docstring optimization """
+        if iteration == 10 :
+            K.set_value(self.model.optimizer.lr, 0.5 * self.model.optimizer.lr)
         self.model.train()
 
     def evaluation(self):
@@ -110,8 +113,7 @@ class Pipeline:
         #best_agent = agent.AlphaZeroAgent(model=best_model)       
 
         player = 1
-        
-          
+
         for i in range(num_games):
             #self.logger.info("Pipeline: Evaluation - Game {}".format(i))
             #print("game {}".format(i))
@@ -130,8 +132,7 @@ class Pipeline:
         self.win_ratio.append(win_rate)
         self.draw_ratio.append(draw_rate)
         print("agent vs random - win ratio {} - draw ratio {}".format(win_rate, draw_rate))
-        
-        
+
         #wins = 0
         #draws = 0
         #player = 1
@@ -154,8 +155,7 @@ class Pipeline:
         #self.win_ratio_agent.append(win_rate)
         #self.draw_ratio_agent.append(draw_rate)
         #print("agent vs agent - win ratio {} - draw ratio {}".format(win_rate, draw_rate))
-       
-    
+
         #if win_rate > 0.55:
         #    self.best_model_version = self.agent.model.get_model_count()-1
         #    self.best_win_rate = win_rate
