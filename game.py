@@ -88,7 +88,7 @@ class TicTacToeOptimized(Game):
         """ Resets the simulation to the current state of the game. """
         self.boards_simulation = copy.deepcopy(self.boards)
         self.legal_moves_simulation = copy.deepcopy(self.legal_moves)
-        self.current_player_simulation = 0
+        self.current_player_simulation = self.current_player
 
     def reset_game(self):
         """ Resets the game. The board is cleared and it's player one's turn."""
