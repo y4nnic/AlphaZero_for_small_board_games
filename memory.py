@@ -209,3 +209,26 @@ class PositionMemory:
                     self.probabilities[i, 8]
                 ))
                 print("Outcome: {}" .format(self.outcomes[i]))
+
+        if self.game == "Connect4":
+            for i in range(self.size):
+                print("---------------------------------")
+                print("Position {}" .format(i))
+                player = self.states[i,0,0,2]
+                if player == 0: player = 2
+                print("Current player: {}" .format(player))
+                if player == 2:
+                    board = self.states[i, :, :, 1] + self.states[i, :,:, 0] * 2
+                if player == 1:
+                    board = self.states[i, :, :, 0] + self.states[i, :, :, 1] * 2
+                print("{}" .format(board))
+                print("Probabilities: \n {} | {} | {} | {} | {} | {} | {} " .format(
+                    self.probabilities[i, 0],
+                    self.probabilities[i, 1],
+                    self.probabilities[i, 2],
+                    self.probabilities[i, 3],
+                    self.probabilities[i, 4],
+                    self.probabilities[i, 5],
+                    self.probabilities[i, 6],
+                ))
+                print("Outcome: {}" .format(self.outcomes[i]))
