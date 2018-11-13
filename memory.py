@@ -54,7 +54,9 @@ class PositionMemory:
             self.probabilities = np.append(self.probabilities, position.probabilities[np.newaxis, :], axis=0)
 
         if self.variant == "TicTacToe":
-            self.add_rotations(position)
+            self.add_rotations_tic_tac_toe(position)
+        if self.variant == "Connect4":
+            self.add_mirror_connect_four(position)
         
         if self.size > 10000:
             self.states = self.states[100:]
@@ -62,7 +64,7 @@ class PositionMemory:
             self.probabilities = self.probabilities[100:]
             self.size -= 100
     
-    def add_rotations(self, position):
+    def add_rotations_tic_tac_toe(self, position):
         self.size += 3
         rotation_1 = np.rot90(position.state[np.newaxis,:,:], 1, (1,2))
         prob_1 = np.zeros(9)
@@ -111,7 +113,16 @@ class PositionMemory:
         self.states = np.append(self.states, rotation_3 , axis=0)
         self.outcomes = np.append(self.outcomes, position.outcome)
         self.probabilities = np.append(self.probabilities, prob_3[np.newaxis,:], axis=0)
-                                                                                 
+
+    def add_mirror_connect_four(self, position):
+        self.size += 1
+        mirror = position.state[np.newaxis,:,:]
+        mirror = mirror[:,:,np.arange(6,0,-1)]
+        prob = position.probabilities[np.arange(6,0,-1)]
+        self.states = np.append(self.states, mirror, axis=0)
+        self.outcomes = np.append(self.outcomes, position.outcome)
+        self.probabilities = np.append(self.probabilities, prob[np.newaxis,:], axis=0)
+
     def save(self, id):
         """ TODO docstring save_memory """
         path = "saved/memory/{}/" .format(id)
