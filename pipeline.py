@@ -121,11 +121,11 @@ class Pipeline:
 
         for i in range(num_games):
             #self.logger.info("Pipeline: Evaluation - Game {}".format(i))
-            winning = agent_vs_random(self.agent, player, self.variant)
+            winner = agent_vs_random(self.agent, player, self.variant)
             
-            if winning == 0:
+            if winner == 0:
                 draws += 1
-            if winning == player:
+            if winner == player:
                 wins += 1
                 # self.logger.info("agent won ({})".format(wins))
                 #print("agent won ({})".format(wins))
@@ -233,8 +233,12 @@ def agent_vs_random(eval_agent, player, variant="TicTacToe"):
 
     # logger.info("Player {} has won the game after {} turns.".format(winner, turn))
     #print("Player {} won the game after {} turns.".format(winner, turn))
+    if current_player == 0:
+        winner = -1*winning
+    else:
+        winner = winning
 
-    return winning
+    return winner
 
 
 def agent_vs_agent(eval_agent, best_agent, player, variant="TicTacToe"):
