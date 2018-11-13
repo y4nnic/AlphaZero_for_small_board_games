@@ -181,7 +181,7 @@ class PositionMemory:
         """ Prints all positions in this memory. """
         np.set_printoptions(precision=3)
 
-        if self.game == "TicTacToe":
+        if self.variant == "TicTacToe":
             for i in range(self.size):
                 print("---------------------------------")
                 print("Position {}" .format(i))
@@ -210,7 +210,7 @@ class PositionMemory:
                 ))
                 print("Outcome: {}" .format(self.outcomes[i]))
 
-        if self.game == "Connect4":
+        if self.variant == "Connect4":
             for i in range(self.size):
                 print("---------------------------------")
                 print("Position {}" .format(i))
