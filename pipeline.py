@@ -116,12 +116,11 @@ class Pipeline:
         #            model_id=self.id
         #        )
         #best_model.load(self.best_model_version)
-        #best_agent = agent.AlphaZeroAgent(model=best_model)       
+        #best_agent = agent.AlphaZeroAgent(model=best_model)
         player = 1
 
         for i in range(num_games):
             #self.logger.info("Pipeline: Evaluation - Game {}".format(i))
-            #print("game {}".format(i))
             winning = agent_vs_random(self.agent, player, self.variant)
             
             if winning == 0:
@@ -224,9 +223,9 @@ def agent_vs_random(eval_agent, player, variant="TicTacToe"):
     num_simulations = config.EVALUATION['num_simulations']
 
     while winning is 0 and turn < max_length:
-        if current_player == 1:
+        if current_player == 0:
             winning, _ = player_one.play_move(num_simulations, temperature=0)
-        if current_player == -1:
+        if current_player == 1:
             winning, _ = player_two.play_move(num_simulations, temperature=0)
 
         current_player = game_environment.current_player
