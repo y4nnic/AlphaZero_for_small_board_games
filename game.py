@@ -245,7 +245,6 @@ class Connect4Optimized(Game):
         winning = self.is_winning()
         self.current_player = 1 - self.current_player
         self.turn += 1
-        print("turn {}" .format(self.turn))
         return winning
 
     def is_winning(self):

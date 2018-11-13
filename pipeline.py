@@ -81,7 +81,6 @@ class Pipeline:
         """ TODO docstring self_play """
         num_games = config.SELF_PLAY['num_games']
         for i in range(num_games):
-            print("game {}" .format(i))
             #self.logger.info("Pipeline: Self-Play - Game {}".format(i))
             #print("Game {}".format(i))
             self.agent.self_play(self.memory, self.game)
@@ -118,17 +117,16 @@ class Pipeline:
         #        )
         #best_model.load(self.best_model_version)
         #best_agent = agent.AlphaZeroAgent(model=best_model)       
-
         player = 1
 
         for i in range(num_games):
             #self.logger.info("Pipeline: Evaluation - Game {}".format(i))
             #print("game {}".format(i))
-            winner = agent_vs_random(self.agent, player, self.variant)
+            winning = agent_vs_random(self.agent, player, self.variant)
             
-            if winner == 0:
+            if winning == 0:
                 draws += 1
-            if winner == player:
+            if winning == player:
                 wins += 1
                 # self.logger.info("agent won ({})".format(wins))
                 #print("agent won ({})".format(wins))
@@ -220,16 +218,16 @@ def agent_vs_random(eval_agent, player, variant="TicTacToe"):
 
     current_player = game_environment.current_player
 
-    winner = 0
+    winning = 0
     turn = 0
 
     num_simulations = config.EVALUATION['num_simulations']
 
-    while winner is 0 and turn < max_length:
+    while winning is 0 and turn < max_length:
         if current_player == 1:
-            winner, _ = player_one.play_move(num_simulations, temperature=0)
+            winning, _ = player_one.play_move(num_simulations, temperature=0)
         if current_player == -1:
-            winner, _ = player_two.play_move(num_simulations, temperature=0)
+            winning, _ = player_two.play_move(num_simulations, temperature=0)
 
         current_player = game_environment.current_player
         turn += 1
@@ -237,7 +235,7 @@ def agent_vs_random(eval_agent, player, variant="TicTacToe"):
     # logger.info("Player {} has won the game after {} turns.".format(winner, turn))
     #print("Player {} won the game after {} turns.".format(winner, turn))
 
-    return winner
+    return winning
 
 
 def agent_vs_agent(eval_agent, best_agent, player, variant="TicTacToe"):
@@ -265,16 +263,16 @@ def agent_vs_agent(eval_agent, best_agent, player, variant="TicTacToe"):
 
     current_player = game_environment.current_player
 
-    winner = 0
+    winning = 0
     turn = 0
 
     num_simulations = config.EVALUATION['num_simulations']
 
-    while winner is 0 and turn < max_length:
+    while winning is 0 and turn < max_length:
         if current_player == 1:
-            winner, _ = player_one.play_move(num_simulations, temperature=0, opponent=player_two)
+            winning, _ = player_one.play_move(num_simulations, temperature=0, opponent=player_two)
         if current_player == -1:
-            winner, _ = player_two.play_move(num_simulations, temperature=0, opponent=player_one)
+            winning, _ = player_two.play_move(num_simulations, temperature=0, opponent=player_one)
 
         current_player = game_environment.current_player
         turn += 1
@@ -282,4 +280,4 @@ def agent_vs_agent(eval_agent, best_agent, player, variant="TicTacToe"):
     # logger.info("Player {} has won the game after {} turns.".format(winner, turn))
     #print("Player {} won the game after {} turns.".format(winner, turn))
 
-    return winner
+    return winning
