@@ -117,8 +117,8 @@ class PositionMemory:
     def add_mirror_connect_four(self, position):
         self.size += 1
         mirror = position.state[np.newaxis,:,:]
-        mirror = mirror[:,:,np.arange(6,0,-1)]
-        prob = position.probabilities[np.arange(6,0,-1)]
+        mirror = mirror[:,:,np.arange(6,-1,-1)]
+        prob = position.probabilities[np.arange(6,-1,-1)]
         self.states = np.append(self.states, mirror, axis=0)
         self.outcomes = np.append(self.outcomes, position.outcome)
         self.probabilities = np.append(self.probabilities, prob[np.newaxis,:], axis=0)
