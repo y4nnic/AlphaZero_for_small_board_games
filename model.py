@@ -22,7 +22,8 @@ class AZModel:
         if not load:
             self.neural_network = neural_networks.NeuralNetwork(
                 self.input_shape,
-                self.num_possible_moves
+                self.num_possible_moves,
+                id=self.model_id
             )
 
         self.X = None
@@ -67,7 +68,8 @@ class AZModel:
         self.neural_network = neural_networks.NeuralNetwork(
             self.input_shape,
             self.num_possible_moves,
-            load_path=path + ".json"
+            load_path=path + ".json",
+            id=self.id
         )
 
     def train(self):

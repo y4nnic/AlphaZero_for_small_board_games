@@ -12,10 +12,11 @@ from keras.callbacks import TensorBoard
 
 class NeuralNetwork:
 
-    def __init__(self, input_shape, num_possible_moves, load_path=None):
+    def __init__(self, input_shape, num_possible_moves, load_path=None, id="test"):
         """ TODO docstring __init__"""
         self.input_shape = input_shape
         self.tensorboard = None
+        self.id = id
 
         if load_path is None:
             self.network = self._compile(
@@ -223,7 +224,7 @@ class NeuralNetwork:
             }
         )
 
-        self.tensorboard = TensorBoard(log_dir="tb/{}".format(time()))
+        self.tensorboard = TensorBoard(log_dir="tb/{}".format(self.id))
 
         return model
 
