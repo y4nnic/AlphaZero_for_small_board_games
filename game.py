@@ -29,28 +29,25 @@ class Game():
 
 
 class TicTacToeOptimized(Game):
-    """ TODO docstring TicTacToe"""
+    """ Representation of the board (for one player):
+
+        Bits (0 = least signigicant)
+        28-30   -> first row
+        24-26   -> second row
+        20-22   -> third row
+        16-18   -> first column
+        12-14   -> second column
+         8-10   -> third column
+         4- 6   -> first diagonal (left top -> right bottom)
+         0- 2   -> second diagonal (right top -> left bottom)
+
+    Representation of the players:
+
+        Player 1 -> 0
+        Player 2 -> 1"""
 
     def __init__(self):
-        """ Initializes the game.
-
-            Representation of the board (for one player):
-
-            Bits (0 = least signigicant)
-            28-30   -> first row
-            24-26   -> second row
-            20-22   -> third row
-            16-18   -> first column
-            12-14   -> second column
-             8-10   -> third column
-             4- 6   -> first diagonal (left top -> right bottom)
-             0- 2   -> second diagonal (right top -> left bottom)
-
-            Representation of the players:
-
-            Player 1 -> 0
-            Player 2 -> 1
-        """
+        """ Initializes the game. """
         self.name = "TicTacToe"
         self.moves = {
             0:0x40040040,
@@ -83,6 +80,7 @@ class TicTacToeOptimized(Game):
         self.turn_simulation = self.turn
 
     def get_len_action_space(self):
+        """ Returns the board_size (usually 9 for TicTacToe)."""
         return self.board_size
 
     def reset_simulation(self):
@@ -100,7 +98,19 @@ class TicTacToeOptimized(Game):
         self.current_player = 0
 
     def execute_move(self, action):
-        """ TODO docstring execute_move """
+        """ This function executes a given action, if the move is legal.
+        The legal_moves vector is updated accordingly afterwards. Before changing
+        the current player, and thus ending the turn, the position is checked
+        for winning stone combinations.
+
+        Args:
+            action: Index of the action that is to be executed.
+
+        Returns:
+            winning: This is 1, if the current board contains a winning combination
+                of stones (only the stone's of the player that made the move are considered)
+                and 0 otherwise.
+        """
         if self.legal_moves[action] == 1:
             self.boards[self.current_player] |= self.moves[action]
             self.legal_moves[action] = 0
@@ -135,7 +145,19 @@ class TicTacToeOptimized(Game):
         return memory.Position(state, self.legal_moves)
 
     def simulate_move(self, action):
-        """ TODO docstring simulate move """
+        """This function executes a given action on the simulation board, if the move is legal.
+        The legal_moves_simulation vector is updated accordingly afterwards. Before changing
+        the current player (of the simulation), and thus ending the turn, the position is checked
+        for winning stone combinations.
+
+        Args:
+            action: Index of the action that is to be executed.
+
+        Returns:
+            winning: This is 1, if the current board contains a winning combination
+                of stones (only the stone's of the player that made the move are considered)
+                and 0 otherwise.
+        """
         if self.legal_moves_simulation[action] == 1:
             self.boards_simulation[self.current_player_simulation] |= self.moves[action]
             self.legal_moves_simulation[action] = 0
@@ -156,7 +178,7 @@ class TicTacToeOptimized(Game):
         return winning
 
     def get_current_position_simulation(self):
-        """ Returns a Position object that contains the current game state. """
+        """ Returns a Position object that contains the current game state of the simulation. """
         pieces_p1 = self.board_to_array(self.boards_simulation[self.player_1])
         pieces_p2 = self.board_to_array(self.boards_simulation[self.player_2])
 
@@ -171,6 +193,9 @@ class TicTacToeOptimized(Game):
         return memory.Position(state, self.legal_moves_simulation)
 
     def board_to_array(self, board_bin):
+        """ This method converts the binary board representation (containing the stone positions
+        for one of the players), which is used for computational
+        efficiency, to a np.array that can be used as input for the model. """
         board = np.zeros((3,3,1), dtype=np.uint8)
         board[0,0] = (board_bin & 0x40) >> 6
         board[0,1] = (board_bin & 0x4000) >> 14
@@ -187,6 +212,7 @@ class TicTacToeOptimized(Game):
 class Connect4Optimized(Game):
 
     def __init__(self):
+        """ Initializes the game. """
         self.name = "Connect4"
         self.player_1 = 0
         self.player_2 = 1
@@ -211,9 +237,11 @@ class Connect4Optimized(Game):
         self.turn_simulation = self.turn
 
     def get_len_action_space(self):
+        """ Returns the board_width (usually 7 for TicTacToe)."""
         return self.board_width
 
     def reset_simulation(self):
+        """ Resets the simulation to the current state of the game. """
         self.boards_simulation = copy.deepcopy(self.boards)
         self.legal_moves_simulation = copy.deepcopy(self.legal_moves)
         self.current_player_simulation = self.current_player
@@ -221,6 +249,7 @@ class Connect4Optimized(Game):
         self.turn_simulations = self.turn
 
     def reset_game(self):
+        """ Resets the game. The board is cleared and it's player one's turn."""
         board_p1 = 0b000000000000000000000000000000000000000000
         board_p2 = 0b000000000000000000000000000000000000000000
 
@@ -231,6 +260,19 @@ class Connect4Optimized(Game):
         self.turn = 0
 
     def execute_move(self, action):
+        """ This function executes a given action, if the move is legal.
+        The legal_moves vector is updated accordingly afterwards. Before changing
+        the current player, and thus ending the turn, the position is checked
+        for winning stone combinations.
+
+        Args:
+            action: Index of the action that is to be executed.
+
+        Returns:
+            winning: This is 1, if the current board contains a winning combination
+                of stones (only the stone's of the player that made the move are considered)
+                and 0 otherwise.
+        """
         if self.legal_moves[action] == 1:
             move = 1 << (6 - action + 7 * self.column_counts[action])
             self.boards[self.current_player] |= move
@@ -248,6 +290,7 @@ class Connect4Optimized(Game):
         return winning
 
     def is_winning(self):
+        """ Checks the board for winning combinations. """
         # vertical check
         board = self.boards[self.current_player]
         board = board & (board >> 7)
@@ -274,9 +317,11 @@ class Connect4Optimized(Game):
         return 0
 
     def get_current_position(self):
+        """ Returns a Position object that contains the current game state. """
         pieces_p1 = self.board_to_array(self.boards[self.player_1])
         pieces_p2 = self.board_to_array(self.boards[self.player_2])
 
+        # TODO check colour!!
         if self.current_player == self.player_1:
             colour = np.ones((self.board_height, self.board_width, 1), dtype=np.uint8)
             state = np.concatenate((pieces_p1, pieces_p2, colour), axis=2)
@@ -288,6 +333,19 @@ class Connect4Optimized(Game):
         return memory.Position(state, self.legal_moves)
 
     def simulate_move(self, action):
+        """This function executes a given action on the simulation board, if the move is legal.
+        The legal_moves_simulation vector is updated accordingly afterwards. Before changing
+        the current player (of the simulation), and thus ending the turn, the position is checked
+        for winning stone combinations.
+
+        Args:
+            action: Index of the action that is to be executed.
+
+        Returns:
+            winning: This is 1, if the current board contains a winning combination
+                of stones (only the stone's of the player that made the move are considered)
+                and 0 otherwise.
+        """
         if self.legal_moves_simulation[action] == 1:
             move = 1 << (6 - action + 7 * self.column_counts_simulation[action])
             self.boards_simulation[self.current_player_simulation] |= move
@@ -304,6 +362,7 @@ class Connect4Optimized(Game):
         return winning, self.turn_simulation
 
     def is_winning_simulation(self):
+        """ Checks the simulation board for winning combinations. """
         # vertical check
         board = self.boards_simulation[self.current_player_simulation]
         board = board & (board >> 7)
@@ -330,6 +389,7 @@ class Connect4Optimized(Game):
         return 0
 
     def get_current_position_simulation(self):
+        """ Returns a Position object that contains the current game state of the simulation. """
         pieces_p1 = self.board_to_array(self.boards_simulation[self.player_1])
         pieces_p2 = self.board_to_array(self.boards_simulation[self.player_2])
 
@@ -344,6 +404,9 @@ class Connect4Optimized(Game):
         return memory.Position(state, self.legal_moves_simulation)
 
     def board_to_array(self, board_bin):
+        """ This method converts the binary board representation (containing the stone positions
+        for one of the players), which is used for computational
+        efficiency, to a np.array that can be used as input for the model. """
         board = np.zeros((6, 7, 1), dtype=np.uint8)
         board[0, 0] = board_bin >> 41
         board[0, 1] = (board_bin & 0b10000000000000000000000000000000000000000) >> 40
