@@ -6,10 +6,24 @@ import logs
 
 
 class Position:
-    """ TODO docstring Position """
+    """ Objects of this class contain all relevant information corresponding to
+    a board position that was generated during self-play.
+
+    Attributes:
+        state: The representation of the game state. This is the input for the
+            neural network.
+        legal_actions: A binary vector describing which actions are legal in this
+            position. The action with index i is legal, if legal_actions[i] == 1.
+        player: The player, whos turn it is in this board position. If 0, it is player
+            one's (started the game) turn, if 1, it is the second player's turn.
+        outcome: The outcome of the self-play game corresponding to this position:
+             1: The current player won the game.
+            -1: The opponent of the current player won the game.
+        probabilities: The MCTS-policy corresponding to this position.
+    """
 
     def __init__(self, state, legal_actions):
-        """ TODO docstring __init__ """
+        """ Constructor. """
         self.state = state
         self.legal_actions = legal_actions
 
@@ -18,19 +32,32 @@ class Position:
         self.probabilities = np.zeros(legal_actions.shape)
 
     def set_outcome(self, outcome):
-        """ TODO docstring set_outcome """
+        """ Sets the outcome. """
         self.outcome = outcome
 
     def set_probabilities(self, distribution):
-        """ TODO docstring set_probabilities """
+        """ Sets the policy. """
         self.probabilities = distribution
 
 
 class PositionMemory:
-    """ TODO docstring Memory """
+    """ The PositionMemory saves recent board positions occuring during self-play. The oldest
+    positions are deleted, if the size of the memory surpasses a fixed maximum size.
+    Rotations and symmetries are handled here as well. Additionaly, the PositionMemory
+    provides the training data set for the model (according to the hyperparamters in config.yp)
+
+    Attributes:
+         states: A np.array containing all states (and their symmetries/rotations).
+         outcomes: A np.array containing the outcomes corresponding to the states.
+            (outcomes[i] is the policy corresponding to states[i]).
+         probabilities A np.array containing the MCTS-policies corresponding to the states
+            (probabilities[i] is the policy corresponding to states[i]).
+         size:
+
+    """
 
     def __init__(self, variant):
-        """ TODO docstring __init__ """
+        """ Constructor. """
         self.states = None  # []
         self.outcomes = None  # []
         self.probabilities = None  # []
@@ -39,7 +66,15 @@ class PositionMemory:
         #self.logger = logs.get_logger()
 
     def add(self, position):
-        """ TODO docstring add """
+        """ This method adds a position to the memory. For an empty memory the np.arrays
+        are initialized with the given position. Afterwards, rotations/symmetries are added
+        depending on the game. If the size surpasses the maximum threshold, the first 100
+        positions are discarded.
+
+        Args:
+            position: A Position object (as described above) that should be added to
+                the memory.
+        """
         if self.states is None:
             self.size += 1
             self.states = np.array(position.state, dtype=np.uint8)
@@ -65,6 +100,8 @@ class PositionMemory:
             self.size -= 100
     
     def add_rotations_tic_tac_toe(self, position):
+        """ This method adds three rotations (90, 180, 270 degree) of the state representation, together with
+        adjusted policy vectors. """
         self.size += 3
         rotation_1 = np.rot90(position.state[np.newaxis,:,:], 1, (1,2))
         prob_1 = np.zeros(9)
@@ -115,6 +152,8 @@ class PositionMemory:
         self.probabilities = np.append(self.probabilities, prob_3[np.newaxis,:], axis=0)
 
     def add_mirror_connect_four(self, position):
+        """ This method adds a mirror image of the position's state representation
+        with a policy vector, that is adjusted accordingly. """
         self.size += 1
         mirror = position.state[np.newaxis,:,:]
         mirror = mirror[:,:,np.arange(6,-1,-1)]
@@ -124,7 +163,9 @@ class PositionMemory:
         self.probabilities = np.append(self.probabilities, prob[np.newaxis,:], axis=0)
 
     def save(self, id):
-        """ TODO docstring save_memory """
+        """ This method saves the current memory in a new folder
+        (path = saved/memory/<id>)."""
+
         path = "saved/memory/{}/" .format(id)
 
         if not os.path.exists(path):
@@ -149,7 +190,8 @@ class PositionMemory:
         )
 
     def load(self, id):
-        """ TODO docstring load_memory """
+        """ This method loads a memory that was saved before under
+        saved/memory/<id>. """
         path = "saved/memory/{}/" .format(id)
         size = np.load(
             file=path + "size.npy"
@@ -166,17 +208,20 @@ class PositionMemory:
         )
 
     def get_training_data(self):
-        """ TODO docstring get_data """
+        """ The needed number of positions is computed based on the parameters in
+        config.py. This number of positions is then randomly chosen from the PositionMemory.
+
+        Returns:
+            X:  A np.array containing the state representations for the training.
+            y_outcomes: A np.array containing the targets for the value head.
+            y_probabilites: A np.array containing the targets for the policy head.
+        """
         num_batches = config.OPTIMISATION['num_batches']
         batch_size = config.OPTIMISATION['batch_size']
         num_positions = num_batches * batch_size
 
         print("num_positions: {}".format(num_positions))
-        #states = np.array(self.states)
-        #outcomes = np.array(self.outcomes)
-        #probabilities = np.array(self.probabilities)
 
-        # memory_size = self.get_current_size()
         indices = np.arange(0,self.size,1)
 
         if self.size > num_positions:
@@ -188,7 +233,7 @@ class PositionMemory:
 
         return X, y_outcomes, y_probabilities
 
-    def print(self):
+    def print_positions(self):
         """ Prints all positions in this memory. """
         np.set_printoptions(precision=3)
 
