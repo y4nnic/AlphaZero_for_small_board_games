@@ -23,7 +23,7 @@ class AZModel:
             self.neural_network = neural_networks.NeuralNetwork(
                 self.input_shape,
                 self.num_possible_moves,
-                id=self.model_id
+                id=self.id
             )
 
         self.X = None
