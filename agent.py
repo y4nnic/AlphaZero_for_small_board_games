@@ -95,7 +95,7 @@ class AlphaZeroAgent(Agent):
          (only if the opponent is an AlphaZeroAgent).
 
          Args:
-            number_simulations: Number of tree searches before a move is selected.
+            number_simulations: Number of simulations before a move is selected.
             temperature: Controls the amount of exploration during the tree search (>= 0).
             opponent: The opposing player. Only necessary, if the opponent is an AlphaZeroAgent.
             add_dirichlet: If True, Dirichlet noise is added to the root's priors during MCTS.
@@ -105,7 +105,7 @@ class AlphaZeroAgent(Agent):
             position: The game state (memory.Position) before the selected action is executed.
          """
         for i in range(number_simulations):
-            self.tree_search.search(add_dirichlet=add_dirichlet)
+            self.tree_search.simulation(add_dirichlet=add_dirichlet)
 
         action, distribution = self.tree_search.play(temperature=temperature)
         # self.logger.info("AZAgent: played move: {}".format(action))

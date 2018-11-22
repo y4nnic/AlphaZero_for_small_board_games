@@ -187,8 +187,8 @@ class MonteCarloTreeSearch:
         # initial evaluation
         self.evaluate(self.root)
 
-    def search(self, add_dirichlet=False):
-        """ Executes a full tree search that consists of three phases:
+    def simulation(self, add_dirichlet=False):
+        """ Executes a full simulation that consists of three phases:
 
         Selection - Expansion (in self.select) - Evaluation - Backup
 
