@@ -195,8 +195,6 @@ class MonteCarloTreeSearch:
         Args:
             add_dirichlet: Dirichlet noise is added to U(s,a) if True.
          """
-        self.game.reset_simulation()
-
         self.logger.info("MCTS: ################ Selection ################")
         selected_action, leaf_node, winning_simulation, game_over = self.select(add_dirichlet=add_dirichlet)
 
@@ -236,6 +234,7 @@ class MonteCarloTreeSearch:
         selected_action = None
         winning_simulation = None
         game_over = False
+
         self.game.reset_simulation()
 
         # Debugging
