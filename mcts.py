@@ -201,7 +201,6 @@ class MonteCarloTreeSearch:
         selected_action, leaf_node, winning_simulation, game_over = self.select(add_dirichlet=add_dirichlet)
 
         self.logger.info("MCTS: ################ Evaluation ################")
-
         if game_over == 1:
             value_estimate = winning_simulation
         else:
@@ -293,7 +292,7 @@ class MonteCarloTreeSearch:
 
             current_node = next_node
 
-            if winning_simulation == 1 or turn > 8:
+            if winning_simulation == 1 or turn > self.game.board_size:
                 # self.logger.info("MCTS: Player {} won simulated game." .format(simulation_winner))
                 game_over = True # added for evaluation of won games (no need to estimate the value)
                 break
