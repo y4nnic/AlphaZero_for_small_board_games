@@ -8,11 +8,14 @@ import neural_networks
 class AZModel:
     """ TODO docstring model """
 
-    def __init__(self, memory, input_shape, num_possible_moves, model_id=None, load=False):
+    def __init__(self, memory, input_shape, num_possible_moves, model_id=None, load=False, lr=None, reg=None):
         """ TODO docstring __init__ """
         self.id = model_id # might be overwritten during loading
         self.num_possible_moves = num_possible_moves
         self.input_shape = input_shape
+
+        self.lr = lr
+        self.reg = reg
 
         self.model_counter = 0
 
@@ -23,7 +26,9 @@ class AZModel:
             self.neural_network = neural_networks.NeuralNetwork(
                 self.input_shape,
                 self.num_possible_moves,
-                id=self.id
+                net_id=self.id,
+                lr=self.lr,
+                reg=self.reg
             )
 
         self.X = None
@@ -69,7 +74,9 @@ class AZModel:
             self.input_shape,
             self.num_possible_moves,
             load_path=path + ".json",
-            id=self.id
+            net_id=self.id,
+            lr=self.lr,
+            reg=self.reg
         )
 
     def train(self):

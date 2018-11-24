@@ -9,13 +9,11 @@ import config
 
 import copy
 
-#from tqdm import tqdm
-
 
 class Pipeline:
     """ TODO docstring Pipeline """
 
-    def __init__(self, id, variant="TicTacToe"):
+    def __init__(self, id, variant="TicTacToe", lr=None, reg=None):
         """ TODO docstring __init__ """
         # game environment
         if variant == "Connect4":
@@ -29,6 +27,9 @@ class Pipeline:
 
         self.variant = variant
 
+        self.lr = lr
+        self.reg = reg
+
         # memory
         self.memory = memory.PositionMemory(variant=variant)
 
@@ -38,7 +39,9 @@ class Pipeline:
             memory=self.memory,
             input_shape=self.input_shape,
             num_possible_moves=self.num_possible_moves,
-            model_id=self.id
+            model_id=self.id,
+            lr=self.lr,
+            reg=self.reg
         )
 
         # agent
