@@ -90,6 +90,7 @@ class PositionMemory:
 
         if self.variant == "TicTacToe":
             self.add_rotations_tic_tac_toe(position)
+            self.add_reflections_tic_tac_toe(position)
         if self.variant == "Connect4":
             self.add_mirror_connect_four(position)
         
@@ -98,7 +99,40 @@ class PositionMemory:
             self.outcomes = self.outcomes[100:]
             self.probabilities = self.probabilities[100:]
             self.size -= 100
-    
+
+    def add_reflections_tic_tac_toe(self, position):
+        """ This method saves a diagonal reflection (and its rotations) of the original position.
+        0 / 1 / 2       0 / 3 / 6
+        3 / 4 / 5  -->  1 / 4 / 7
+        6 / 7 / 8       2 / 5 / 8
+        """
+        self.size += 1
+        reflection = np.zeros(position.state[:, :].shape)
+        probabilities = np.zeros(9)
+
+        for x in range(3):
+            for y in range(3):
+                reflection[x, y] = position.state[y, x]
+
+        probabilities[0] = position.probabilities[0]
+        probabilities[1] = position.probabilities[3]
+        probabilities[2] = position.probabilities[6]
+        probabilities[3] = position.probabilities[1]
+        probabilities[4] = position.probabilities[4]
+        probabilities[5] = position.probabilities[7]
+        probabilities[6] = position.probabilities[2]
+        probabilities[7] = position.probabilities[5]
+        probabilities[8] = position.probabilities[8]
+
+        self.states = np.append(self.states, reflection[np.newaxis, :, :], axis=0)
+        self.outcomes = np.append(self.outcomes, position.outcome)
+        self.probabilities = np.append(self.probabilities, probabilities[np.newaxis, :], axis=0)
+
+        position.state = reflection
+        position.probabilities = probabilities
+
+        self.add_rotations_tic_tac_toe(position)
+
     def add_rotations_tic_tac_toe(self, position):
         """ This method adds three rotations (90, 180, 270 degree) of the state representation, together with
         adjusted policy vectors. """
