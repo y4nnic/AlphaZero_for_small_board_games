@@ -7,9 +7,9 @@ MCTS = {
 }
 
 OPTIMISATION = {
-    'num_batches': 4,
+    'num_batches': 1,
     'batch_size': 512,
-    'num_epochs': 1
+    'num_epochs': 10
 }
 
 EVALUATION = {
@@ -25,12 +25,14 @@ SELF_PLAY = {
 }
 
 NEURAL_NETWORKS = {
-    'learning_rate': 0.2,
+    'learning_rate': 0.02,
     'regularization_strength': 0.001,
-    'num_filters_policy': 512,
-    'num_filters_value': 512,
-    'num_filters_tower': 512,
-    'num_residual_blocks': 3,
+    'num_filters_policy': 256,
+    'num_filters_value': 256,
+    'num_filters_tower': 256,
+    'num_residual_blocks': 5,
     'kernel_size_tower': 3,
-    'hidden_dim_value': 512
+    'hidden_dim_value': 256
 }
+
+g
