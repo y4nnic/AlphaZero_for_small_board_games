@@ -34,5 +34,3 @@ NEURAL_NETWORKS = {
     'kernel_size_tower': 3,
     'hidden_dim_value': 256
 }
-
-g

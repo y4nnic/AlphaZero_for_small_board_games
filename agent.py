@@ -168,8 +168,8 @@ class AlphaZeroAgent(Agent):
         while turn > 0:
             turn -= 1
             position = positions[turn]
-            winning *= -1
             outcome = winning
+            winning *= -1
 
             # debugging
             # print("-----------------")
