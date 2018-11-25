@@ -200,7 +200,7 @@ class MonteCarloTreeSearch:
 
         self.logger.info("MCTS: ################ Evaluation ################")
         if game_over == 1:
-            value_estimate = winning_simulation
+            value_estimate = -1*winning_simulation
         else:
             value_estimate = self.evaluate(leaf_node)
 
@@ -344,10 +344,11 @@ class MonteCarloTreeSearch:
         last_action = current_node.last_action
 
         while current_node.parent is not None:
+            value *= -1
             current_node = current_node.parent
             current_node.backup(value, last_action)
             last_action = current_node.last_action
-            value *= -1
+
 
     def play(self, temperature):
         """ Selects an action to be played according to the root node's statistics.
