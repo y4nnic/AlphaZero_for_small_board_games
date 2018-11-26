@@ -344,11 +344,10 @@ class MonteCarloTreeSearch:
         last_action = current_node.last_action
 
         while current_node.parent is not None:
-            value *= -1
             current_node = current_node.parent
             current_node.backup(value, last_action)
             last_action = current_node.last_action
-
+            value *= -1
 
     def play(self, temperature):
         """ Selects an action to be played according to the root node's statistics.
