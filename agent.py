@@ -170,7 +170,7 @@ class AlphaZeroAgent(Agent):
             position = positions[turn]
             winning *= -1
             outcome = winning
-
+            
             # debugging
             # print("-----------------")
             # print("saving position")
