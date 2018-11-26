@@ -4,7 +4,7 @@ import config
 from time import time
 
 from keras.models import Model, model_from_json
-from keras.optimizers import Adam
+from keras.optimizers import SGD#Adam
 from keras import regularizers
 from keras.layers import Activation, Add, BatchNormalization, Conv2D, Dense, Flatten, Input
 from keras.callbacks import TensorBoard
@@ -214,9 +214,13 @@ class NeuralNetwork:
         model = Model(inputs=[input], outputs=[value_head, policy_head])
 
         model.compile(
-            optimizer=Adam(
-                lr= config.NEURAL_NETWORKS['learning_rate']
+            optimizer = SGD(
+                lr = config.NEURAL_NETWORKS['learning_rate'],
+                momentum = 0.0
             ),
+            #optimizer=Adam(
+            #    lr= config.NEURAL_NETWORKS['learning_rate']
+            #),
             loss={
                 'value': 'mean_squared_error',
                 'policy': cross_entropy
