@@ -28,6 +28,8 @@ class Pipeline:
         self.variant = variant
 
         self.lr = lr
+        if lr == None:
+            self.lr = config.NEURAL_NETWORKS['learning_rate']
         self.reg = reg
 
         # memory
@@ -99,10 +101,11 @@ class Pipeline:
 
     def optimization(self, iteration):
         """ TODO docstring optimization """
-        if iteration == 7:
+        if iteration > 0 and iteration%5 == 0:
+            self.lr = self.lr/2
             K.set_value(
                 self.model.neural_network.network.optimizer.lr,
-                config.NEURAL_NETWORKS["learning_rate"]/10
+                self.lr
             )
         self.model.train()
 
