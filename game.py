@@ -321,7 +321,6 @@ class Connect4Optimized(Game):
         pieces_p1 = self.board_to_array(self.boards[self.player_1])
         pieces_p2 = self.board_to_array(self.boards[self.player_2])
 
-        # TODO check colour!!
         if self.current_player == self.player_1:
             colour = np.ones((self.board_height, self.board_width, 1), dtype=np.uint8)
             state = np.concatenate((pieces_p1, pieces_p2, colour), axis=2)
