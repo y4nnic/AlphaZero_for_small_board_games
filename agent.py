@@ -114,6 +114,7 @@ class AlphaZeroAgent(Agent):
         if variant == "Connect4":
             self.max_game_length = 42
 
+        self.trajectories = []
         # initialize logger
         # self.logger = logs.get_logger()
 
@@ -135,10 +136,6 @@ class AlphaZeroAgent(Agent):
             self.tree_search.simulation(add_dirichlet=add_dirichlet)
 
         action, distribution = self.tree_search.play(temperature=temperature)
-        # self.logger.info("AZAgent: played move: {}".format(action))
-        # self.logger.info("AZAgent: distribution: {}".format(distribution))
-        # print("AZAgent: played move: {}".format(action))
-        # print("AZAgent: distribution: {}".format(distribution))
 
         position = self.game.get_current_position()
         position.set_probabilities(distribution)
@@ -148,7 +145,7 @@ class AlphaZeroAgent(Agent):
 
         winning = self.game.execute_move(action)
 
-        return winning, position
+        return winning, position, action
 
     def join_game(self, game):
         """ The game enviroment and the length of the action space are set and the MCTS object
@@ -181,15 +178,22 @@ class AlphaZeroAgent(Agent):
         winning = 0
         turn = 0
         positions = []
+        trajectory = ""
 
         while winning is 0 and turn < self.max_game_length:
-            winning, position = self.play_move(number_simulations=config.SELF_PLAY["num_simulations"], add_dirichlet=True)
+            winning, position, action = self.play_move(number_simulations=config.SELF_PLAY["num_simulations"], add_dirichlet=True)
             positions.append(position)
+            trajectory += str(action)
             turn += 1
             # print("turn {}".format(turn))
 
         # self.logger.info("Player {} won the game after {} turns.".format(winner, turn))
         #print("Player {} won the game after {} turns.".format(winner, turn))
+
+        if trajectory not in self.trajectories:
+            self.trajectories[trajectory] = 1
+        else:
+            self.trajectories += 1
 
         player = position.player
         while turn > 0:
@@ -214,10 +218,8 @@ class AlphaZeroAgent(Agent):
             player = 1 - player
             position.set_outcome(outcome)
             position_memory.add(position)
-        #print("#################################")
 
-        #for position in positions:
-        #    position.set_outcome(winner)
-        #    # saving position
-        #    position_memory.add(position)
-
+    def show_trajectories(self):
+        """ This method prints information of the seen trajectories. """
+        print("Number of seen trajectories: {}".format(np.sum(self.trajectories.values())))
+        print("Number of unique trajectories: {}".format(len(self.trajectories)))

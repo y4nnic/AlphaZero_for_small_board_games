@@ -81,6 +81,8 @@ class Pipeline:
             print("iteration {} | evaluation".format(iteration))
             self.evaluation()
 
+            self.agent.show_trajectories()
+
         return self.win_ratio, self.draw_ratio
 
     def self_play(self, iteration):
