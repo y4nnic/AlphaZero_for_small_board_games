@@ -42,9 +42,13 @@ class NeuralNetwork:
             self.network.load_weights(load_path)
 
             self.network.compile(
-                optimizer=Adam(
+                optimizer = SGD(
                     lr=config.NEURAL_NETWORKS['learning_rate'],
+                    momentum=0.9
                 ),
+                #optimizer=Adam(
+                #    lr=config.NEURAL_NETWORKS['learning_rate'],
+                #),
                 loss={
                     'value': 'mean_squared_error',
                     'policy': cross_entropy

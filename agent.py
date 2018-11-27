@@ -13,7 +13,34 @@ class Agent:
     def join_game(self, game):
         pass
 
+    
+    
+class Player():
+    def __init__(self, az_agent=None):
+        self.game = None
+        self.len_action_space = None
+        self.az_agent = az_agent
 
+    def join_game(self, game):
+        """ Sets the game environment and the length of the action space.
+
+        Args:
+             game: See attributes.
+        """
+        self.game = game
+
+    def play_move(self, number_simulations=None, temperature=None, opponent=None):
+        current_position = self.game.get_current_position()
+        
+        action = input("choose from {} :".format(current_position.legal_actions))
+        action = int(action)
+        
+        self.az_agent.tree_search.update_root(action)
+        position = self.game.get_current_position()
+        winning = self.game.execute_move(action)
+        return winning, position
+    
+    
 class RandomAgent(Agent):
     """ This agent plays random moves. The moves are sampled uniformly and at random
      from all legal actions of the current position.

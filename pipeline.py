@@ -8,6 +8,7 @@ import logs
 import config
 
 import copy
+import numpy as np
 
 
 class Pipeline:
@@ -247,7 +248,7 @@ def agent_vs_random(eval_agent, player, variant="TicTacToe"):
     return winner
 
 
-def agent_vs_agent(eval_agent, best_agent, player, variant="TicTacToe"):
+def agent_vs_agent(eval_agent, best_agent, player=1, variant="TicTacToe"):
     # logger = logs.get_logger()
     # game_environment = game.Connect4(6, 7)
     if variant == "TicTacToe":
@@ -278,15 +279,130 @@ def agent_vs_agent(eval_agent, best_agent, player, variant="TicTacToe"):
     num_simulations = config.EVALUATION['num_simulations']
 
     while winning is 0 and turn < max_length:
-        if current_player == 1:
+        if current_player == 0:
             winning, _ = player_one.play_move(num_simulations, temperature=0, opponent=player_two)
-        if current_player == -1:
+            current_position = game_environment.get_current_position()
+            board = 2*current_position.state[:,:,0] + 1*current_position.state[:,:,1]
+        if current_player == 1:
             winning, _ = player_two.play_move(num_simulations, temperature=0, opponent=player_one)
+            current_position = game_environment.get_current_position()
+            board = 2*current_position.state[:,:,1] + 1*current_position.state[:,:,0]
 
         current_player = game_environment.current_player
         turn += 1
+        
+        print("===========")
+        print(" {} | {} | {}".format(
+            board[0,0],
+            board[0,1],
+            board[0,2]
+        ))
+        print(" {} | {} | {}".format(
+            board[1,0],
+            board[1,1],
+            board[1,2]
+        ))
+        print(" {} | {} | {}".format(
+            board[2,0],
+            board[2,1],
+            board[2,2]
+        ))
+        print("===========")
 
     # logger.info("Player {} has won the game after {} turns.".format(winner, turn))
     #print("Player {} won the game after {} turns.".format(winner, turn))
+    if current_player == 0:
+        winner = -1*winning
+    else:
+        winner = winning
 
-    return winning
+    return winner
+
+def agent_vs_player(az_agent, player=1, variant="TicTacToe"):
+    # logger = logs.get_logger()
+    if variant == "TicTacToe":
+        game_environment = game.TicTacToeOptimized()
+        max_length = 9
+    if variant == "Connect4":
+        game_environment = game.Connect4Optimized()
+        max_length = 42
+
+    player_one = az_agent
+    player_two = agent.Player(az_agent)
+
+    if player == -1:
+        player_two = az_agent
+        player_one = agent.Player(az_agent)
+
+    # reset game
+    game_environment.reset_game()
+
+    player_one.join_game(game_environment)
+    player_two.join_game(game_environment)
+
+    current_player = game_environment.current_player
+
+    winning = 0
+    turn = 0
+
+    num_simulations = 25
+
+    while winning is 0 and turn < max_length:
+        
+        if current_player == 0:
+            winning, _ = player_one.play_move(num_simulations, temperature=0)
+            current_position = game_environment.get_current_position()
+            board = 2*current_position.state[:,:,0] + 1*current_position.state[:,:,1]
+        if current_player == 1:
+            winning, _ = player_two.play_move(num_simulations, temperature=0)
+            current_position = game_environment.get_current_position()
+            board = 2*current_position.state[:,:,1] + 1*current_position.state[:,:,0]
+            
+        current_player = game_environment.current_player
+        turn += 1
+        
+        print("===========")
+        print(" {} | {} | {}".format(
+            board[0,0],
+            board[0,1],
+            board[0,2]
+        ))
+        print(" {} | {} | {}".format(
+            board[1,0],
+            board[1,1],
+            board[1,2]
+        ))
+        print(" {} | {} | {}".format(
+            board[2,0],
+            board[2,1],
+            board[2,2]
+        ))
+        print("-----------")
+        value, policy = az_agent.model.evaluate(current_position.state)
+        policy = policy*current_position.legal_actions
+        policy = policy/np.sum(policy)
+        print("value: {}" .format(value))
+        print("policy:")
+        print(" {} | {} | {}".format(
+            policy[0],
+            policy[1],
+            policy[2]
+        ))
+        print(" {} | {} | {}".format(
+            policy[3],
+            policy[4],
+            policy[5]
+        ))
+        print(" {} | {} | {}".format(
+            policy[6],
+            policy[7],
+            policy[8]
+        ))
+        print("===========")
+        
+    if current_player == 0:
+        winner = -1*winning
+    else:
+        winner = winning
+    print("Player {} won the game after {} turns.".format(winner, turn))
+    return winner
