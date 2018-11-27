@@ -1,5 +1,4 @@
 """ These dictionarys set most of the relevant settings and hyperparameters for the program. """
-
 MCTS = {
     'c_puct': 1.0,
     'dir_alpha': 0.6,
@@ -35,5 +34,3 @@ NEURAL_NETWORKS = {
     'kernel_size_tower': 3,
     'hidden_dim_value': 512
 }
-
-
