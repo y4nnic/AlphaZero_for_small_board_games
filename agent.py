@@ -114,7 +114,7 @@ class AlphaZeroAgent(Agent):
         if variant == "Connect4":
             self.max_game_length = 42
 
-        self.trajectories = []
+        self.trajectories = {}
         # initialize logger
         # self.logger = logs.get_logger()
 
