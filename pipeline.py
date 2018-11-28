@@ -49,7 +49,11 @@ class Pipeline:
 
         # agent
         self.agent = agent.AlphaZeroAgent(model=self.model, variant=variant)
-
+        
+        # trajectories counter
+        self.seen_trajectories = None
+        self.unique_trajectories = None
+        
         # evaluation
         self.best_model_version = 0
         self.best_win_rate = 0
@@ -68,6 +72,8 @@ class Pipeline:
 
     def run(self, num_iterations):
         """ TODO docstring run """
+        self.seen_trajectories = np.zeros(num_iterations)
+        self.unique_trajectories = np.zeros(num_iterations)
         for iteration in range(num_iterations):
             #self.logger.info("Pipeline: ######## Iteration {} | Self-Play ########".format(iteration))
             print("iteration {} | self-play".format(iteration))
@@ -79,11 +85,9 @@ class Pipeline:
 
             #self.logger.info("Pipeline: ######## Iteration {} | Evaluation ########".format(iteration))
             print("iteration {} | evaluation".format(iteration))
-            self.evaluation()
-
-            self.agent.show_trajectories()
-
-        return self.win_ratio, self.draw_ratio
+            self.evaluation(iteration)
+            
+        return self.win_ratio, self.draw_ratio, self.seen_trajectories, self.unique_trajectories
 
     def self_play(self, iteration):
         """ TODO docstring self_play """
@@ -112,7 +116,7 @@ class Pipeline:
             )
         self.model.train()
 
-    def evaluation(self):
+    def evaluation(self, iteration):
         """ TODO docstring evaluation """
         num_games = config.EVALUATION['num_games']
         wins = 0
@@ -145,6 +149,8 @@ class Pipeline:
         self.win_ratio.append(win_rate)
         self.draw_ratio.append(draw_rate)
         print("agent vs random - win ratio {} - draw ratio {}".format(win_rate, draw_rate))
+        
+        self.seen_trajectories[iteration], self.unique_trajectories[iteration] = self.agent.show_trajectories()
 
         #wins = 0
         #draws = 0
@@ -233,9 +239,9 @@ def agent_vs_random(eval_agent, player, variant="TicTacToe"):
 
     while winning is 0 and turn < max_length:
         if current_player == 0:
-            winning, _ = player_one.play_move(num_simulations, temperature=0)
+            winning, _, _ = player_one.play_move(num_simulations, temperature=0)
         if current_player == 1:
-            winning, _ = player_two.play_move(num_simulations, temperature=0)
+            winning, _, _ = player_two.play_move(num_simulations, temperature=0)
 
         current_player = game_environment.current_player
         turn += 1
@@ -282,11 +288,11 @@ def agent_vs_agent(eval_agent, best_agent, player=1, variant="TicTacToe"):
 
     while winning is 0 and turn < max_length:
         if current_player == 0:
-            winning, _ = player_one.play_move(num_simulations, temperature=0, opponent=player_two)
+            winning, _, _ = player_one.play_move(num_simulations, temperature=0, opponent=player_two)
             current_position = game_environment.get_current_position()
             board = 2*current_position.state[:,:,0] + 1*current_position.state[:,:,1]
         if current_player == 1:
-            winning, _ = player_two.play_move(num_simulations, temperature=0, opponent=player_one)
+            winning, _, _ = player_two.play_move(num_simulations, temperature=0, opponent=player_one)
             current_position = game_environment.get_current_position()
             board = 2*current_position.state[:,:,1] + 1*current_position.state[:,:,0]
 

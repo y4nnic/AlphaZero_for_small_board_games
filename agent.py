@@ -38,7 +38,7 @@ class Player():
         self.az_agent.tree_search.update_root(action)
         position = self.game.get_current_position()
         winning = self.game.execute_move(action)
-        return winning, position
+        return winning, position, action
     
     
 class RandomAgent(Agent):
@@ -91,7 +91,7 @@ class RandomAgent(Agent):
 
         position = self.game.get_current_position()
         winning = self.game.execute_move(action)
-        return winning, position
+        return winning, position, action
 
 
 class AlphaZeroAgent(Agent):
@@ -189,11 +189,11 @@ class AlphaZeroAgent(Agent):
 
         # self.logger.info("Player {} won the game after {} turns.".format(winner, turn))
         #print("Player {} won the game after {} turns.".format(winner, turn))
-
+        
         if trajectory not in self.trajectories:
             self.trajectories[trajectory] = 1
         else:
-            self.trajectories += 1
+            self.trajectories[trajectory] += 1
 
         player = position.player
         while turn > 0:
@@ -220,6 +220,13 @@ class AlphaZeroAgent(Agent):
             position_memory.add(position)
 
     def show_trajectories(self):
-        """ This method prints information of the seen trajectories. """
-        print("Number of seen trajectories: {}".format(np.sum(self.trajectories.values())))
-        print("Number of unique trajectories: {}".format(len(self.trajectories)))
+        """ This method prints information of the seen trajectories. """        
+        seen_trajectories = self.trajectories.values()
+        num_seen_trajectories = sum(seen_trajectories)
+        
+        num_unique_trajectories = len(self.trajectories)
+        
+        print("Number of seen trajectories: {}".format(num_seen_trajectories))
+        print("Number of unique trajectories: {}".format(num_unique_trajectories))
+        
+        return num_seen_trajectories, num_unique_trajectories
