@@ -7,7 +7,21 @@ import neural_networks
 
 class AZModel:
     """
+    An AZModel is used for the optimization phase and the evaluations for the MCTS. It contains
+    the neural network and saves its versions after each training phase.
 
+    Attributes:
+        memory: An instance of PositionMemory that provides the training data.
+        input_shape: The input shape for the neural network: (board_height, board_width, 3)
+        num_possible_moves: Maximum number of possible moves for one state of the
+            considered game.
+        model_id: Unique name or number (string) for this model.
+        load: If load is False, a neural network is initialized. Otherwise
+            it needs to be loaded afterwords with the load() method.
+        lr: The initial learning rate for the training process. The config.py file provides
+            the value if lr == None.
+        reg: The regularization strength for the training process. The config.py file provides
+            the value if lr == None.
     """
 
     def __init__(self, memory, input_shape, num_possible_moves, model_id=None, load=False, lr=None, reg=None):
@@ -21,8 +35,12 @@ class AZModel:
             model_id: Unique name or number (string) for this model.
             load: If load is False, a neural network is initialized. Otherwise
                 it needs to be loaded afterwords with the load() method.
+            lr: The initial learning rate for the training process. The config.py file provides
+                the value if lr == None.
+            reg: The regularization strength for the training process. The config.py file provides
+                the value if lr == None.
         """
-        self.id = model_id # might be overwritten during loading
+        self.id = model_id 
         self.num_possible_moves = num_possible_moves
         self.input_shape = input_shape
 
