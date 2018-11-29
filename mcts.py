@@ -3,8 +3,7 @@ import numpy as np
 import config
 
 
-# Optimization: http://www.moderndescartes.com/essays/deep_dive_mcts/
-# nodes save statistics of children
+# Optimized based on: http://www.moderndescartes.com/essays/deep_dive_mcts/
 
 class Node:
     """
