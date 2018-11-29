@@ -1,15 +1,27 @@
 import numpy as np
 
-import logs
+#import logs
 import config
 import neural_networks
 
 
 class AZModel:
-    """ TODO docstring model """
+    """
+
+    """
 
     def __init__(self, memory, input_shape, num_possible_moves, model_id=None, load=False, lr=None, reg=None):
-        """ TODO docstring __init__ """
+        """ Initializes the main components.
+
+        Args:
+            memory: An instance of PositionMemory that provides the training data.
+            input_shape: The input shape for the neural network: (board_height, board_width, 3)
+            num_possible_moves: Maximum number of possible moves for one state of the
+                considered game.
+            model_id: Unique name or number (string) for this model.
+            load: If load is False, a neural network is initialized. Otherwise
+                it needs to be loaded afterwords with the load() method.
+        """
         self.id = model_id # might be overwritten during loading
         self.num_possible_moves = num_possible_moves
         self.input_shape = input_shape
@@ -39,7 +51,8 @@ class AZModel:
         #self.logger = logs.get_logger()
 
     def evaluate(self, state):
-        """ TODO docstring evaluate """
+        """ The model evaluates a given state and returns the neural network's
+         value estimate and policy estimate. """
         state = state[np.newaxis, :, :, :]
 
         value, policy_logits = self.neural_network.predict(state)
@@ -51,7 +64,13 @@ class AZModel:
         return value, policy
 
     def save(self, version_id):
-        """ TODO docstring save_model """
+        """ Saves the current version of the model (.json + .h5) in the
+         directory "saved/neural_networks/".
+
+        Args:
+             version_id: Id of the current version (file: "model_<version_id>").
+                -> <model_id>_<iteration>
+        """
         model_json = self.neural_network.to_json()
         path = "saved/neural_networks/model_{}" .format(version_id)
 
@@ -63,8 +82,12 @@ class AZModel:
         self.neural_network.save_weights(path + ".h5")
 
     def load(self, version):
-        """ TODO docstring load_model """
-        # self.id = version_id.split('_')[1]
+        """ Loads the given version of the model from the directory
+        "saved/neural_networks/".
+
+        Args:
+            version: Iteration of the version of the model that is loaded.
+        """
         self.model_counter = version
         version = str(version)
         path = "saved/neural_networks/model_{}_{}" .format(self.id, version)
@@ -80,7 +103,9 @@ class AZModel:
         )
 
     def train(self):
-        """ TODO docstring train """
+        """ Gathers the training data, trains the neural network and saves the model.
+        The hyperparameters are set in config.py.
+        """
         batch_size = config.OPTIMISATION['batch_size']
         num_epochs = config.OPTIMISATION['num_epochs']
 
@@ -102,11 +127,12 @@ class AZModel:
         self.model_counter += 1
 
     def get_model_count(self):
-        """ TODO docstring get_model_counter """
+        """ Returns the current version number of the model. """
         return self.model_counter
 
     def get_training_data(self):
-        """ TODO docstring get_data """
+        """ Receives the training data from the position memory and provides
+        them for the neural network."""
         self.X, self.y_outcomes, self.y_probabilities = self.memory.get_training_data()
         print("model_X shape: {}".format(self.X.shape))
         print("model_y_outcomes: {}".format(self.y_outcomes.shape))
