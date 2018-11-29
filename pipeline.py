@@ -4,18 +4,53 @@ import memory
 import model
 import keras.backend as K
 
-import logs
 import config
 
-import copy
 import numpy as np
 
 
 class Pipeline:
-    """ TODO docstring Pipeline """
+    """
+    This class controls the self-play training process of an AlphaZeroAgent.
 
-    def __init__(self, id, variant="TicTacToe", lr=None, reg=None):
-        """ TODO docstring __init__ """
+    Attributes:
+        pipeline_id: A string that is used as a unique id for the corresponding run.
+
+        variant: Either "TicTacToe" or "Connect4". The attributes input_shape, num_possible_moves,
+            and game are set accordingly.
+
+        input_shape: The input shape for the neural networks: (board_height, board_width, 3)
+        num_possible_moves: Number of possible moves for the first turn of the game.
+        game: Instance of the game environment corresponding to the variant attribute. It is
+            used for the self-play phase.
+
+        memory: A PositionMemory object. It saves the self-play positions, adds reflections
+            and rotations, and provides training data for the model.
+
+        model: An AZmodel object. It is used for the optimization phase and the evaluations
+            for the MCTS.
+
+        lr: The initial learning rate for the neural network's training process. The value is
+            provided by config.py if not set manually (see __init__).
+        reg: The regularization strength for the neural network's training process. The value
+            is provided by config.py if not set manually (see __init__).
+
+        agent: An instance of AlphaZeroAgent. It is optimized and evaluated in this pipeline.
+
+        seen_trajectories: A vector that contains the total number of trajectories seen by the
+            agent during the self-play phases. Each component represents the sum of all
+            self-play phases for one iteration.
+        unique_trajectories: Analogously to seen_trajectories this integer represents the total
+            number of unique trajectories seen by the agent.
+
+        win_ratio: This vector contains the win ratios of the agent during the evaluation phases.
+            Each component represents the win rate of one evaluation phase.
+        draw_ratio: This vector contains the draw ratios of the agent during the evaluation phases.
+            Each component represents the draw rate of one evaluation phase.
+        """
+
+    def __init__(self, pipeline_id, variant="TicTacToe", lr=None, reg=None):
+        """ Initializes all components of the self-play training pipelines. """
         # game environment
         if variant == "Connect4":
             self.input_shape = (6, 7, 3)
@@ -29,20 +64,23 @@ class Pipeline:
         self.variant = variant
 
         self.lr = lr
-        if lr == None:
+        if lr is None:
             self.lr = config.NEURAL_NETWORKS['learning_rate']
+
         self.reg = reg
+        if reg is None:
+            self.reg = config.NEURAL_NETWORKS['regularization_strength']
 
         # memory
         self.memory = memory.PositionMemory(variant=variant)
 
         # model
-        self.id = id
+        self.pipeline_id = pipeline_id
         self.model = model.AZModel(
             memory=self.memory,
             input_shape=self.input_shape,
             num_possible_moves=self.num_possible_moves,
-            model_id=self.id,
+            model_id=self.pipeline_id,
             lr=self.lr,
             reg=self.reg
         )
@@ -55,23 +93,29 @@ class Pipeline:
         self.unique_trajectories = None
         
         # evaluation
-        self.best_model_version = 0
-        self.best_win_rate = 0
-        self.best_draw_rate = 0
-        self.evaluation_threshold = 0.55
         self.win_ratio = []
         self.draw_ratio = []
-        self.win_ratio_agent = []
-        self.draw_ratio_agent = []
+
         # logger
         # self.logger = logs.get_logger()
 
-    def load(self):
-        """ TODO docstring load"""
-        pass
-
     def run(self, num_iterations):
-        """ TODO docstring run """
+        """ This method executes the self-play training pipeline.
+
+        Args:
+            num_iterations: Number of iterations.
+
+        Returns:
+            win_ratio: This vector contains the win ratios of the agent during the evaluation phases.
+                Each component represents the win rate of one evaluation phase.
+            draw_ratio: This vector contains the draw ratios of the agent during the evaluation phases.
+                Each component represents the draw rate of one evaluation phase.
+            seen_trajectories: A vector that contains the total number of trajectories seen by the
+            agent during the self-play phases. Each component represents the sum of all
+                self-play phases for one iteration.
+            unique_trajectories: Analogously to seen_trajectories this integer represents the total
+                number of unique trajectories seen by the agent.
+        """
         self.seen_trajectories = np.zeros(num_iterations)
         self.unique_trajectories = np.zeros(num_iterations)
         for iteration in range(num_iterations):
@@ -90,24 +134,28 @@ class Pipeline:
         return self.win_ratio, self.draw_ratio, self.seen_trajectories, self.unique_trajectories
 
     def self_play(self, iteration):
-        """ TODO docstring self_play """
+        """ Executes the self-play phase. The number of games is provided by config.py.
+         The memory is saved in saved/ at the end of the phase.
+
+        Args:
+             iteration: The current iteration of the self-play training process.
+         """
         num_games = config.SELF_PLAY['num_games']
         for i in range(num_games):
             #self.logger.info("Pipeline: Self-Play - Game {}".format(i))
-            #print("Game {}".format(i))
             self.agent.self_play(self.memory, self.game)
 
-            #if (i + 1) % 25 is 0:
-            #    memory_id = "position_memory_{}_ep_{}_{}".format(str(self.id),iteration, i + 1)
-            #    # self.logger.info("saving memory {}".format(memory_id))
-            #    print("saving memory {}".format(memory_id))
-            #    self.memory.save(memory_id)
         memory_id = "position_memory_{}_ep_{}".format(str(self.id),iteration)
         print("saving memory {}".format(memory_id))
         self.memory.save(memory_id)
 
     def optimization(self, iteration):
-        """ TODO docstring optimization """
+        """ Executes the optimization phase. Beginning with iteration 5, the learning
+         rate is decreased every fifth iteration (new_rate = old_rate/2).
+
+        Args:
+            iteration: The current iteration of the self-play training process.
+        """
         if iteration > 0 and iteration%5 == 0:
             self.lr = self.lr/2
             K.set_value(
@@ -117,19 +165,16 @@ class Pipeline:
         self.model.train()
 
     def evaluation(self, iteration):
-        """ TODO docstring evaluation """
+        """ Executes the evaluation phase. The agent plays against a random player. The
+        agent plays as player one half of the time.
+
+        Args:
+            iteration: The current iteration of the self-play training process.
+        """
         num_games = config.EVALUATION['num_games']
         wins = 0
         draws = 0
-        
-        #best_model = model.AZModel(
-        #            memory=self.memory,
-        #            input_shape=self.input_shape,
-        #            num_possible_moves=self.num_possible_moves,
-        #            model_id=self.id
-        #        )
-        #best_model.load(self.best_model_version)
-        #best_agent = agent.AlphaZeroAgent(model=best_model)
+
         player = 1
 
         for i in range(num_games):
@@ -141,7 +186,6 @@ class Pipeline:
             if winner == player:
                 wins += 1
                 # self.logger.info("agent won ({})".format(wins))
-                #print("agent won ({})".format(wins))
             player *= -1
         # self.logger.info("win ratio {}".format(wins/num_games))
         win_rate = wins/num_games
@@ -152,64 +196,16 @@ class Pipeline:
         
         self.seen_trajectories[iteration], self.unique_trajectories[iteration] = self.agent.show_trajectories()
 
-        #wins = 0
-        #draws = 0
-        #player = 1
-        #for i in range(num_games):
-        #    #self.logger.info("Pipeline: Evaluation - Game {}".format(i))
-        #    #print("game {}".format(i))
-        #    winner = agent_vs_random(self.agent, player)
-        #    winner = agent_vs_agent(self.agent, best_agent, player)
-        #    
-        #    if winner == 0:
-        #        draws += 1
-        #    if winner == player:
-        #        wins += 1
-        #        # self.logger.info("agent won ({})".format(wins))
-        #        #print("agent won ({})".format(wins))
-        #    player *= -1
-        # self.logger.info("win ratio {}".format(wins/num_games))
-        #win_rate = wins/num_games
-        #draw_rate = draws/num_games
-        #self.win_ratio_agent.append(win_rate)
-        #self.draw_ratio_agent.append(draw_rate)
-        #print("agent vs agent - win ratio {} - draw ratio {}".format(win_rate, draw_rate))
-
-        #if win_rate > 0.55:
-        #    self.best_model_version = self.agent.model.get_model_count()-1
-        #    self.best_win_rate = win_rate
-        #    self.best_draw_rate = draw_rate
-        #s    print("New best agent!")
-        #else:
-            #self.agent=best_agent
-            
-       
-        #if win_rate > self.best_win_rate:
-        #    self.best_model_version = self.agent.model.get_model_count()-1
-        #    self.best_win_rate = win_rate
-         #   self.best_draw_rate = draw_rate
-         #   print("New best agent!")
-            
-        #else:
-        #    if (win_rate + 0.05 > self.best_win_rate) and (draw_rate-0.1 > self.best_draw_rate):
-        #        self.best_model_version = self.agent.model.get_model_count()-1
-        #        self.best_win_rate = win_rate
-        #        self.best_draw_rate = draw_rate
-        #        print("New best agent!")
-        #    else:
-                #best_model = model.AZModel(
-                #    memory=self.memory,
-                #    input_shape=self.input_shape,
-                #    num_possible_moves=self.num_possible_moves,
-                #    model_id=self.id
-                #)
-                #best_model.load(self.best_model_version)
-                #best_agent = agent.AlphaZeroAgent(model=best_model)
-                #self.agent=best_agent
-
 
 def agent_vs_random(eval_agent, player, variant="TicTacToe"):
-    # logger = logs.get_logger()
+    """ Executes one game between eval_agent and a random player.
+
+    Args:
+        eval_agent: The AlphaZeroAgent instance.
+        player: If player=-1, the agent plays as player two. Otherwise,
+            the agent begins the game as player one.
+        variant: The game variant. Either "TicTacToe" or "Connect4".
+    """
     if variant == "TicTacToe":
         game_environment = game.TicTacToeOptimized()
         max_length = 9
@@ -246,8 +242,6 @@ def agent_vs_random(eval_agent, player, variant="TicTacToe"):
         current_player = game_environment.current_player
         turn += 1
 
-    # logger.info("Player {} has won the game after {} turns.".format(winner, turn))
-    #print("Player {} won the game after {} turns.".format(winner, turn))
     if current_player == 0:
         winner = -1*winning
     else:
@@ -257,8 +251,14 @@ def agent_vs_random(eval_agent, player, variant="TicTacToe"):
 
 
 def agent_vs_agent(eval_agent, best_agent, player=1, variant="TicTacToe"):
-    # logger = logs.get_logger()
-    # game_environment = game.Connect4(6, 7)
+    """ Executes one game between two agents (eval_agent and best_agent).
+
+    Args:
+        eval_agent: The AlphaZeroAgent instance that is evaluated.
+        best_agent: The current best agent in this run.
+        player: If player=-1, eval_agent plays as player two. Otherwise,
+            eval_agent begins the game as player one.
+        variant: The game variant. Either "TicTacToe" or "Connect4". """
     if variant == "TicTacToe":
         game_environment = game.TicTacToeOptimized()
         max_length = 9
@@ -317,8 +317,6 @@ def agent_vs_agent(eval_agent, best_agent, player=1, variant="TicTacToe"):
         ))
         print("===========")
 
-    # logger.info("Player {} has won the game after {} turns.".format(winner, turn))
-    #print("Player {} won the game after {} turns.".format(winner, turn))
     if current_player == 0:
         winner = -1*winning
     else:
@@ -326,7 +324,15 @@ def agent_vs_agent(eval_agent, best_agent, player=1, variant="TicTacToe"):
 
     return winner
 
+
 def agent_vs_player(az_agent, player=1, variant="TicTacToe"):
+    """ Executes one game between an agent an a human player.
+
+        Args:
+            az_agent: The AlphaZeroAgent instance that is evaluated.
+            player: If player=-1, the agent plays as player two. Otherwise,
+                the agent begins the game as player one.
+            variant: The game variant. Either "TicTacToe" or "Connect4". """
     # logger = logs.get_logger()
     if variant == "TicTacToe":
         game_environment = game.TicTacToeOptimized()
@@ -353,16 +359,16 @@ def agent_vs_player(az_agent, player=1, variant="TicTacToe"):
     winning = 0
     turn = 0
 
-    num_simulations = 25
+    num_simulations = config.EVALUATION['num_simulations']
 
     while winning is 0 and turn < max_length:
         
         if current_player == 0:
-            winning, _ = player_one.play_move(num_simulations, temperature=0)
+            winning, _, _ = player_one.play_move(num_simulations, temperature=0)
             current_position = game_environment.get_current_position()
             board = 2*current_position.state[:,:,0] + 1*current_position.state[:,:,1]
         if current_player == 1:
-            winning, _ = player_two.play_move(num_simulations, temperature=0)
+            winning, _, _ = player_two.play_move(num_simulations, temperature=0)
             current_position = game_environment.get_current_position()
             board = 2*current_position.state[:,:,1] + 1*current_position.state[:,:,0]
             
