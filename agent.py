@@ -14,7 +14,6 @@ class Agent:
         pass
 
     
-    
 class Player():
     def __init__(self, az_agent=None):
         self.game = None
