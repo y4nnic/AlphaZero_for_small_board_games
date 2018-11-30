@@ -40,7 +40,7 @@ class AZModel:
             reg: The regularization strength for the training process. The config.py file provides
                 the value if lr == None.
         """
-        self.id = model_id 
+        self.id = model_id
         self.num_possible_moves = num_possible_moves
         self.input_shape = input_shape
 

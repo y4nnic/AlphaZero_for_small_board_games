@@ -11,9 +11,35 @@ from keras.callbacks import TensorBoard
 
 
 class NeuralNetwork:
+    """ The neural network evaluates states for the MCTS and is trained on the positions
+    saved in the position memory. It is controled by an AZModel object.
+
+    Attributes:
+        input_shape: Shape of the neural network's input: (board_height, board_width, 3).
+        tensorboard: Instance of the TensorBoard class. It is used to save and visualize the loss.
+        id: Unique name or number of this neural network version.
+        lr: The inital learning rate that is used to train the network. If None, the config.py
+            file will provide a value.
+        reg: The regularization strength used to train the network. If None, the config.py
+            file will provide a value.
+        network: The instance of the Keras Model class representing the neural network.
+    """
 
     def __init__(self, input_shape, num_possible_moves, load_path=None, net_id="test", lr=None, reg=None):
-        """ TODO docstring __init__"""
+        """ Iniitalizes the neural network if loadpath is None. Otherwise it is loaded from
+        the given files.
+
+        Args:
+            input_shape: Shape of the neural network's input: (board_height, board_width, 3).
+            num_possible_moves: Maximum number of possible moves for one state of the
+                considered game.
+            load_path: Path of the saved network's file that will be loaded.
+            net_id: Unique name or number of this neural network version.
+            lr: The inital learning rate that is used to train the network. If None, the config.py
+                file will provide a value.
+            reg: The regularization strength used to train the network. If None, the config.py
+                file will provide a value.
+        """
         self.input_shape = input_shape
         self.tensorboard = None
         self.id = net_id
@@ -46,9 +72,6 @@ class NeuralNetwork:
                     lr=config.NEURAL_NETWORKS['learning_rate'],
                     momentum=0.9
                 ),
-                #optimizer=Adam(
-                #    lr=config.NEURAL_NETWORKS['learning_rate'],
-                #),
                 loss={
                     'value': 'mean_squared_error',
                     'policy': cross_entropy
@@ -60,11 +83,23 @@ class NeuralNetwork:
             )
 
     def predict(self, state):
-        """ TODO docstring predict """
+        """ The neural networks predicts a value and a policy for a given state.
+
+        Args:
+             state: Tensor of shape (board_height, board_width, 3) corresponding to
+                the current position.
+        """
         return self.network.predict_on_batch(state)
 
     def fit(self, X, y, batch_size, epochs, verbose):
-        """ TODO docstring fit """
+        """ The network is trained on the data (X,y).
+
+        Args:
+             X: The training data.
+             y: The targets (for value and policy head).
+             batch_size: The batch-size used during the training.
+             epochs: The number of epochs used during the training.
+        """
         self.network.fit(
             x=X,
             y=y,
@@ -76,7 +111,15 @@ class NeuralNetwork:
         )
 
     def policy_head(self, X, num_possible_moves, reg, momentum=0.99, epsilon=0.001):
-        """ TODO docstring policy head """
+        """ The policy head gets the residual tower's output as input and outputs
+         a policy estimate.
+
+        Args:
+             X: Input.
+             num_possible_moves: Maximum number of possible moves for one state of the
+                considered game.
+             reg: The regularization strength used during training.
+        """
         conv_block = self.convolutional_block(
             X,
             num_filters=config.NEURAL_NETWORKS['num_filters_policy'],
@@ -99,7 +142,14 @@ class NeuralNetwork:
         return policy
 
     def value_head(self, X, reg, hidden_dimension=256, momentum=0.99, epsilon=0.001):
-        """ TODO docstring value_head """
+        """ The value head gets the residual tower's output as input and outputs a
+         value estimate.
+
+        Args:
+            X: Input.
+            reg: The regularization strength used during training.
+            hidden_dimension: Output dimension of the first fully-connected layer.
+        """
         conv_block = self.convolutional_block(
             X,
             num_filters=config.NEURAL_NETWORKS['num_filters_value'],
@@ -130,7 +180,14 @@ class NeuralNetwork:
         return value
 
     def convolutional_block(self, X, num_filters, kernel_size, reg_strength, momentum=0.99, epsilon=0.001):
-        """ TODO docstring convolutional_block """
+        """ convolution -> BatchNorm -> ReLU
+
+        Args:
+            X: The input.
+            num_filters: The number of filters for the convolution.
+            kernel_size: The kernel-size for the convolution.
+            reg_strength: The regularization strength used during training.
+        """
         conv = Conv2D(
             num_filters,
             kernel_size,
@@ -151,7 +208,14 @@ class NeuralNetwork:
         return output
 
     def residual_block(self, X, num_filters, kernel_size, reg_strength, momentum=0.99, epsilon=0.001):
-        """ TODO docstring residual_block """
+        """ conv. block -> convolution -> BatchNorm -> skip connection -> ReLU
+
+        Args:
+            X: The input.
+            num_filters: The number of filters for the convolution.
+            kernel_size: The kernel-size for the convolution.
+            reg_strength: The regularization strength used during training.
+        """
         conv_block = self.convolutional_block(X, num_filters, kernel_size, reg_strength, momentum, epsilon)
 
         conv = Conv2D(
@@ -176,7 +240,19 @@ class NeuralNetwork:
         return output
 
     def _compile(self, reg_strength, num_residual_blocks ,num_filters, kernel_size, momentum, epsilon, hidden_dim, num_possible_moves):
-        """ TODO docstring _compile """
+        """ This method compiles the full neural network's graph.
+
+        Args:
+             reg_strength: The regularization strength used during training.
+             num_residual_blocks: The number of residual blocks used in the architecture.
+             num_filters: The number of filters used in the convolutional layers.
+             kernel_size The kernel-size used in the convolutional layers.
+             momentum: Momentum of the batch normalization modules.
+             epsilon: Epsilon of the batch normalization modules.
+             hidden_dim: The output dimension of the first fully connected layer in the value head.
+             num_possible_moves: Maximum number of possible moves for one state of the
+                considered game.num_possible_moves:
+        """
         input = Input(shape=self.input_shape)
 
         conv_block = self.convolutional_block(
@@ -222,9 +298,6 @@ class NeuralNetwork:
                 lr = config.NEURAL_NETWORKS['learning_rate'],
                 momentum = 0.0
             ),
-            #optimizer=Adam(
-            #    lr= config.NEURAL_NETWORKS['learning_rate']
-            #),
             loss={
                 'value': 'mean_squared_error',
                 'policy': cross_entropy
@@ -240,16 +313,25 @@ class NeuralNetwork:
         return model
 
     def to_json(self):
-        """ TODO docstring to_json """
+        """ Saves the current neural network to a .json file. """
         return self.network.to_json()
 
     def save_weights(self, path):
-        """ TODO docstring save_weights"""
+        """ Saves the weights of the current neural network to a .h5 file.
+
+        Args:
+            path: Path of the directory in which the weights will be saved.
+        """
         self.network.save_weights(path)
 
 
 def cross_entropy(y_true, y_pred):
-    """ TODO docstring cross_entropy """
+    """ The cross entropy loss function for the policy head.
+
+    Args:
+        y_true: Targets.
+        y_pred: Predictions of the neural network.
+    """
     loss = tf.nn.softmax_cross_entropy_with_logits_v2(
         labels=y_true,
         logits=y_pred
