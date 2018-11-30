@@ -145,7 +145,7 @@ class Pipeline:
             #self.logger.info("Pipeline: Self-Play - Game {}".format(i))
             self.agent.self_play(self.memory, self.game)
 
-        memory_id = "position_memory_{}_ep_{}".format(str(self.id),iteration)
+        memory_id = "position_memory_{}_ep_{}".format(str(self.pipeline_id),iteration)
         print("saving memory {}".format(memory_id))
         self.memory.save(memory_id)
 
