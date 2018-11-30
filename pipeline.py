@@ -374,46 +374,163 @@ def agent_vs_player(az_agent, player=1, variant="TicTacToe"):
             
         current_player = game_environment.current_player
         turn += 1
-        
-        print("===========")
-        print(" {} | {} | {}".format(
-            board[0,0],
-            board[0,1],
-            board[0,2]
-        ))
-        print(" {} | {} | {}".format(
-            board[1,0],
-            board[1,1],
-            board[1,2]
-        ))
-        print(" {} | {} | {}".format(
-            board[2,0],
-            board[2,1],
-            board[2,2]
-        ))
-        print("-----------")
-        value, policy = az_agent.model.evaluate(current_position.state)
-        policy = policy*current_position.legal_actions
-        policy = policy/np.sum(policy)
-        print("value: {}" .format(value))
-        print("policy:")
-        print(" {} | {} | {}".format(
-            policy[0],
-            policy[1],
-            policy[2]
-        ))
-        print(" {} | {} | {}".format(
-            policy[3],
-            policy[4],
-            policy[5]
-        ))
-        print(" {} | {} | {}".format(
-            policy[6],
-            policy[7],
-            policy[8]
-        ))
-        print("===========")
-        
+
+        if variant == "TicTacToe":
+            print("===========")
+            print(" {} | {} | {}".format(
+                board[0,0],
+                board[0,1],
+                board[0,2]
+            ))
+            print(" {} | {} | {}".format(
+                board[1,0],
+                board[1,1],
+                board[1,2]
+            ))
+            print(" {} | {} | {}".format(
+                board[2,0],
+                board[2,1],
+                board[2,2]
+            ))
+            print("-----------")
+            value, policy = az_agent.model.evaluate(current_position.state)
+            policy = policy*current_position.legal_actions
+            policy = policy/np.sum(policy)
+            print("value: {}" .format(value))
+            print("policy:")
+            print(" {} | {} | {}".format(
+                policy[0],
+                policy[1],
+                policy[2]
+            ))
+            print(" {} | {} | {}".format(
+                policy[3],
+                policy[4],
+                policy[5]
+            ))
+            print(" {} | {} | {}".format(
+                policy[6],
+                policy[7],
+                policy[8]
+            ))
+            print("===========")
+        if variant == "Connect4":
+            print("===========")
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                board[0, 0],
+                board[0, 1],
+                board[0, 2],
+                board[0, 3],
+                board[0, 4],
+                board[0, 5],
+                board[0, 6]
+            ))
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                board[1, 0],
+                board[1, 1],
+                board[1, 2],
+                board[1, 3],
+                board[1, 4],
+                board[1, 5],
+                board[1, 6]
+            ))
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                board[2, 0],
+                board[2, 1],
+                board[2, 2],
+                board[2, 3],
+                board[2, 4],
+                board[2, 5],
+                board[2, 6]
+            ))
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                board[3, 0],
+                board[3, 1],
+                board[3, 2],
+                board[3, 3],
+                board[3, 4],
+                board[3, 5],
+                board[3, 6]
+            ))
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                board[4, 0],
+                board[4, 1],
+                board[4, 2],
+                board[4, 3],
+                board[4, 4],
+                board[4, 5],
+                board[4, 6]
+            ))
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                board[5, 0],
+                board[5, 1],
+                board[5, 2],
+                board[5, 3],
+                board[5, 4],
+                board[5, 5],
+                board[5, 6]
+            ))
+            print("-----------")
+            value, policy = az_agent.model.evaluate(current_position.state)
+            policy = policy * current_position.legal_actions
+            policy = policy / np.sum(policy)
+            print("value: {}".format(value))
+            print("policy:")
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                policy[0],
+                policy[1],
+                policy[2],
+                policy[3],
+                policy[4],
+                policy[5],
+                policy[6]
+            ))
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                policy[7],
+                policy[8],
+                policy[9],
+                policy[10],
+                policy[11],
+                policy[12],
+                policy[13]
+            ))
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                policy[14],
+                policy[15],
+                policy[16],
+                policy[17],
+                policy[18],
+                policy[19],
+                policy[20]
+            ))
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                policy[21],
+                policy[22],
+                policy[23],
+                policy[24],
+                policy[25],
+                policy[26],
+                policy[27]
+            ))
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                policy[28],
+                policy[29],
+                policy[30],
+                policy[31],
+                policy[32],
+                policy[33],
+                policy[34]
+            ))
+            print(" {} | {} | {} | {} | {} | {} | {}".format(
+                policy[35],
+                policy[36],
+                policy[37],
+                policy[38],
+                policy[39],
+                policy[40],
+                policy[41]
+            ))
+            print("===========")
     if current_player == 0:
         winner = -1*winning
     else:
