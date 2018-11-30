@@ -415,7 +415,7 @@ def agent_vs_player(az_agent, player=1, variant="TicTacToe"):
             ))
             print("===========")
         if variant == "Connect4":
-            print("===========")
+            print("=========================")
             print(" {} | {} | {} | {} | {} | {} | {}".format(
                 board[0, 0],
                 board[0, 1],
@@ -485,52 +485,7 @@ def agent_vs_player(az_agent, player=1, variant="TicTacToe"):
                 policy[5],
                 policy[6]
             ))
-            print(" {} | {} | {} | {} | {} | {} | {}".format(
-                policy[7],
-                policy[8],
-                policy[9],
-                policy[10],
-                policy[11],
-                policy[12],
-                policy[13]
-            ))
-            print(" {} | {} | {} | {} | {} | {} | {}".format(
-                policy[14],
-                policy[15],
-                policy[16],
-                policy[17],
-                policy[18],
-                policy[19],
-                policy[20]
-            ))
-            print(" {} | {} | {} | {} | {} | {} | {}".format(
-                policy[21],
-                policy[22],
-                policy[23],
-                policy[24],
-                policy[25],
-                policy[26],
-                policy[27]
-            ))
-            print(" {} | {} | {} | {} | {} | {} | {}".format(
-                policy[28],
-                policy[29],
-                policy[30],
-                policy[31],
-                policy[32],
-                policy[33],
-                policy[34]
-            ))
-            print(" {} | {} | {} | {} | {} | {} | {}".format(
-                policy[35],
-                policy[36],
-                policy[37],
-                policy[38],
-                policy[39],
-                policy[40],
-                policy[41]
-            ))
-            print("===========")
+            print("=========================")
     if current_player == 0:
         winner = -1*winning
     else:
