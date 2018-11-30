@@ -10,6 +10,7 @@ Used packages:
 	pandas 0.23.4
 	jupyter 1.0.0
 
-Use "experiment_tictactoe" to run the algorithm. It should achieve a win rate of 70-80% (10-20% draw).
+Open the notebook "run_alphazero" to run the algorithm. The hyperparameters can be changed in 
+the "config.py" file.
 
-You need to create the folders "logs/" and "saved/neural_networks" in order to run the program.
+You may need to create the folders "logs/" and "saved/neural_networks" in order to run the program.
